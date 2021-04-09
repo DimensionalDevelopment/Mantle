@@ -1,5 +1,6 @@
 package slimeknights.mantle.registration.object;
 
+import net.minecraft.block.Block;
 import net.minecraft.util.registry.DefaultedRegistry;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,9 +16,9 @@ import java.util.stream.Collectors;
  * @param <I>  Entry type
  */
 @SuppressWarnings({"unused", "WeakerAccess"})
-public class EnumObject<T extends Enum<T>, I extends DefaultedRegistry<? super I>> {
+public class EnumObject<T extends Enum<T>, I extends Block> {
   /** Singleton empty object, type does not matter as it has no items */
-  private static final EnumObject EMPTY = new EnumObject(Collections.emptyMap());
+  private static final EnumObject EMPTY = new EnumObject<>(Collections.emptyMap());
 
   /** Internal backing supplier map */
   private final Map<T,Supplier<? extends I>> map;
