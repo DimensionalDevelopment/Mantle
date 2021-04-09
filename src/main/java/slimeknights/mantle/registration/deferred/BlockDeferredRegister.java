@@ -189,8 +189,8 @@ public class BlockDeferredRegister extends DeferredRegisterWrapper {
    * @param item      Function to get an item from the block
    * @return  EnumObject mapping between different block types
    */
-  public <T extends Enum<T> & StringIdentifiable, B extends Block> EnumObject<T,Block> registerEnum(
+  public <T extends Enum<T> & StringIdentifiable, B extends Block> EnumObject<T,B> registerEnum(
           String name, T[] values, Function<T,? extends Block> mapper, Function<B, ? extends BlockItem> item) {
-    return registerEnum(name, values, (fullName, value) -> register(fullName, () -> mapper.apply(value), (Function<Block, ? extends BlockItem>) item));
+    return (EnumObject<T, B>) registerEnum(name, values, (fullName, value) -> register(fullName, () -> mapper.apply(value), (Function<Block, ? extends BlockItem>) item));
   }
 }

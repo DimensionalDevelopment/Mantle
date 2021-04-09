@@ -64,7 +64,7 @@ public abstract class DeferredRegisterWrapper{
    * @param register  Function to register an entry
    * @return  EnumObject mapping between different block types
    */
-  protected static <E extends Enum<E> & StringIdentifiable, V extends T, T extends Block> EnumObject<E,V> registerEnum(String name, E[] values, BiFunction<String,E,Supplier<? extends V>> register) {
+  protected static <E extends Enum<E> & StringIdentifiable, V extends Block> EnumObject<E,V> registerEnum(String name, E[] values, BiFunction<String,E,Supplier<? extends V>> register) {
     if (values.length == 0) {
       throw new IllegalArgumentException("Must have at least one value");
     }
