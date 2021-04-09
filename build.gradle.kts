@@ -1,6 +1,5 @@
 plugins {
     id("fabric-loom") version "0.5.43"
-    id("org.cadixdev.licenser") version "0.5.0"
 }
 
 base.archivesBaseName = "mantle"
@@ -63,11 +62,6 @@ java {
 
 loom {
     accessWidener = file("src/main/resources/mantle.aw")
-}
-
-license {
-    header = file("HEADER")
-    include("**/*.java")
 }
 
 tasks.withType<JavaCompile> {
