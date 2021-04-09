@@ -91,3 +91,5 @@ tasks.remapJar {
         input.get().asFile.delete()
     }
 }
+
+task test
