@@ -48,7 +48,7 @@ public class ItemDeferredRegister extends DeferredRegisterWrapper {
    * @return  EnumObject mapping between different item types
    */
   public <T extends Enum<T> & StringIdentifiable, I extends Item> ItemEnumObject<T,I> registerEnum(T[] values, String name, Function<T,? extends I> mapper) {
-    return registerEnum(values, name, (fullName, type) -> register(fullName, () -> mapper.apply(type)));
+    return registerItemEnum(values, name, (fullName, type) -> register(fullName, () -> mapper.apply(type)));
   }
 
   /**
@@ -59,6 +59,6 @@ public class ItemDeferredRegister extends DeferredRegisterWrapper {
    * @return  EnumObject mapping between different item types
    */
   public <T extends Enum<T> & StringIdentifiable, I extends Item> ItemEnumObject<T,I> registerEnum(String name, T[] values, Function<T,? extends I> mapper) {
-    return registerEnum(name, values, (fullName, type) -> register(fullName, () -> mapper.apply(type)));
+    return registerItemEnum(name, values, (fullName, type) -> register(fullName, () -> mapper.apply(type)));
   }
 }
