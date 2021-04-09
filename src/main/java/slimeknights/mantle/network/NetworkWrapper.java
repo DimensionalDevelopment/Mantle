@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
@@ -13,6 +14,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import org.apache.logging.log4j.util.TriConsumer;
 import org.jetbrains.annotations.Nullable;
 import slimeknights.mantle.Mantle;
 import slimeknights.mantle.network.packet.ISimplePacket;
@@ -46,17 +48,26 @@ public class NetworkWrapper {
    * @param decoder    Packet decoder, typically the constructor
    * @param direction  Network direction for validation. Pass null for no direction
    */
-  public void registerPacket(Class<Object> clazz, BiConsumer<Object, PacketByteBuf> encoder, Function<PacketByteBuf, Object> decoder, BiConsumer<Object, PacketSender> consumer, @Nullable NetworkSide direction) {
+  public void registerPacket(Class<Object> clazz, BiConsumer<Object, PacketByteBuf> encoder, Function<PacketByteBuf, Object> decoder, TriConsumer<Object, PlayerEntity, PacketSender> consumer, @Nullable NetworkSide direction) {
     //Workaround for the current system
     Identifier channelName = Mantle.getResource(clazz.getSimpleName());
 
     encoders.add(encoder);
 
     if(direction == NetworkSide.SERVERBOUND) {
-      ServerPlayNetworking.registerGlobalReceiver(channelName, (minecraftServer, serverPlayerEntity, serverPlayNetworkHandler, packetByteBuf, packetSender) -> consumer.accept(decoder.apply(packetByteBuf), packetSender));
+      ServerPlayNetworking.registerGlobalReceiver(channelName,
+              (minecraftServer,
+               serverPlayerEntity,
+               serverPlayNetworkHandler,
+               packetByteBuf,
+               packetSender) -> consumer.accept(decoder.apply(packetByteBuf), serverPlayerEntity, packetSender));
     }
     if(direction == NetworkSide.CLIENTBOUND) {
-      ClientPlayNetworking.registerGlobalReceiver(channelName, (minecraftClient, clientPlayNetworkHandler, packetByteBuf, packetSender) -> consumer.accept(decoder.apply(packetByteBuf), packetSender));
+      ClientPlayNetworking.registerGlobalReceiver(channelName,
+              (minecraftClient,
+               clientPlayNetworkHandler,
+               packetByteBuf,
+               packetSender) -> consumer.accept(decoder.apply(packetByteBuf), minecraftClient.player, packetSender));
     }
   }
 

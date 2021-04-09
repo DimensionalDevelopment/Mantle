@@ -1,5 +1,8 @@
+import java.net.URI
+
 plugins {
     id("fabric-loom") version "0.5.43"
+    id("maven-publish")
 }
 
 base.archivesBaseName = "mantle"
@@ -25,6 +28,10 @@ repositories {
     maven {
         name = "TerraformersMC"
         url = uri("https://maven.terraformersmc.com/")
+    }
+
+    maven {
+        url = uri("gcs://devan-maven")
     }
 }
 
@@ -92,6 +99,28 @@ tasks.remapJar {
     }
 }
 
-tasks.test {
-    println("Fuck Jit Pack")
+configure<PublishingExtension> {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            artifact(tasks.remapJar) {
+                classifier = null
+            }
+        }
+    }
+
+    repositories {
+        // Add repositories to publish to here.
+        if (project.hasProperty("maven_url")) {
+            maven {
+                val mavenUrl = project.property("maven_url") as String
+                url = uri(mavenUrl)
+                if (mavenUrl.startsWith("http") && project.hasProperty("maven_username") && project.hasProperty("maven_password")) {
+                    credentials {
+                        username = project.property("maven_username") as String
+                        password = project.property("maven_password") as String
+                    }
+                }
+            }
+        }
+    }
 }

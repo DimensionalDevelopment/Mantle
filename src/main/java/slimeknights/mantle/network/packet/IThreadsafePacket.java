@@ -1,6 +1,7 @@
 package slimeknights.mantle.network.packet;
 
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 /**
@@ -8,8 +9,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
  */
 public interface IThreadsafePacket extends ISimplePacket {
   @Override
-  default void handle(PacketSender sender) {
-    handleThreadsafe(sender);
+  default void handle(PlayerEntity playerEntity, PacketSender sender) {
+    handleThreadsafe(playerEntity, sender);
 //    NetworkEvent.Context context = supplier.get();
 //    context.enqueueWork(() -> handleThreadsafe(context));
 //    context.setPacketHandled(true);
@@ -20,5 +21,5 @@ public interface IThreadsafePacket extends ISimplePacket {
    * Packet is automatically set to handled as well by the base logic
    * @param sender the packet sender
    */
-  void handleThreadsafe(PacketSender sender);
+  void handleThreadsafe(PlayerEntity playerEntity, PacketSender sender);
 }

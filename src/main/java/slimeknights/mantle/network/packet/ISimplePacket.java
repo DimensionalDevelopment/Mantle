@@ -1,6 +1,7 @@
 package slimeknights.mantle.network.packet;
 
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
 
 /**
@@ -17,5 +18,5 @@ public interface ISimplePacket {
    * Handles receiving the packet
    * @param sender the packet sender
    */
-  void handle(PacketSender sender);
+  void handle(PlayerEntity playerEntity, PacketSender sender);
 }
