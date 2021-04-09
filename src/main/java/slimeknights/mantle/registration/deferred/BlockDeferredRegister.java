@@ -3,12 +3,10 @@ package slimeknights.mantle.registration.deferred;
 import net.minecraft.block.*;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.Registry;
-import slimeknights.mantle.registration.object.BuildingBlockObject;
-import slimeknights.mantle.registration.object.FenceBuildingBlockObject;
-import slimeknights.mantle.registration.object.ItemObject;
-import slimeknights.mantle.registration.object.WallBuildingBlockObject;
+import slimeknights.mantle.registration.object.*;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -168,5 +166,31 @@ public class BlockDeferredRegister extends DeferredRegisterWrapper {
       registerBuilding(name, props, item),
             (FenceBlock) register(name + "_fence", () -> new FenceBlock(props), item).get()
     );
+  }
+
+  /**
+   * Registers an item with multiple variants, prefixing the name with the value name
+   * @param values    Enum values to use for this block
+   * @param name      Name of the block
+   * @param mapper    Function to get a block for the given enum value
+   * @param item      Function to get an item from the block
+   * @return  EnumObject mapping between different block types
+   */
+  public <T extends Enum<T> & StringIdentifiable> EnumObject<T,Block> registerEnum(
+          T[] values, String name, Function<T,Block> mapper, Function<Block, ? extends BlockItem> item) {
+    return registerEnum(values, name, (fullName, value) -> register(fullName, () -> mapper.apply(value), item));
+  }
+
+  /**
+   * Registers a block with multiple variants, suffixing the name with the value name
+   * @param name      Name of the block
+   * @param values    Enum values to use for this block
+   * @param mapper    Function to get a block for the given enum value
+   * @param item      Function to get an item from the block
+   * @return  EnumObject mapping between different block types
+   */
+  public <T extends Enum<T> & StringIdentifiable> EnumObject<T,Block> registerEnum(
+          String name, T[] values, Function<T,? extends Block> mapper, Function<Block, ? extends BlockItem> item) {
+    return registerEnum(name, values, (fullName, value) -> register(fullName, () -> mapper.apply(value), item));
   }
 }

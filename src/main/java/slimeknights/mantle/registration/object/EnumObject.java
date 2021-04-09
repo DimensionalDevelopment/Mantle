@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class EnumObject<T extends Enum<T>, I extends Block> {
   /** Singleton empty object, type does not matter as it has no items */
-  private static final EnumObject EMPTY = new EnumObject<>(Collections.emptyMap());
+  private static final EnumObject EMPTY = new EnumObject(Collections.emptyMap());
 
   /** Internal backing supplier map */
   private final Map<T,Supplier<? extends I>> map;
@@ -75,7 +75,7 @@ public class EnumObject<T extends Enum<T>, I extends Block> {
    * @param value  Value to check for
    * @return  True if the value is contained, false otherwise
    */
-  public boolean contains(DefaultedRegistry<? super I> value) {
+  public boolean contains(Block value) {
     return this.map.values().stream().map(Supplier::get).anyMatch(value::equals);
   }
 
@@ -123,7 +123,7 @@ public class EnumObject<T extends Enum<T>, I extends Block> {
    * @return  Empty EnumObject
    */
   @SuppressWarnings("unchecked")
-  public static <T extends Enum<T>, I extends DefaultedRegistry<? super I>> EnumObject<T,I> empty() {
+  public static <T extends Enum<T>, I extends Block> EnumObject<T,I> empty() {
     return (EnumObject<T,I>) EMPTY;
   }
 
@@ -133,7 +133,7 @@ public class EnumObject<T extends Enum<T>, I extends Block> {
    * @param <I>  Entry type
    */
   @SuppressWarnings({"UnusedReturnValue", "unused"})
-  public static class Builder<T extends Enum<T>, I extends DefaultedRegistry<? super I>> {
+  public static class Builder<T extends Enum<T>, I extends Block> {
     private final Map<T, Supplier<? extends I>> map;
     public Builder(Class<T> clazz) {
       this.map = new EnumMap<>(clazz);
@@ -158,7 +158,7 @@ public class EnumObject<T extends Enum<T>, I extends Block> {
      * @return  Builder instance
      */
     @SuppressWarnings("unchecked")
-    public Builder<T,I> putDelegate(T key, DefaultedRegistry<? super I> value) {
+    public Builder<T,I> putDelegate(T key, Block value) {
       this.map.put(key, () -> (I) value);
       return this;
     }
