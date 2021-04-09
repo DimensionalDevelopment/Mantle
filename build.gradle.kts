@@ -93,5 +93,5 @@ tasks.remapJar {
 }
 
 tasks.test {
-
+    println("Fuck Jit Pack")
 }
