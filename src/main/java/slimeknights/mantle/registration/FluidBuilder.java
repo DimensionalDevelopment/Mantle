@@ -4,13 +4,14 @@ import alexiil.mc.lib.attributes.fluid.FluidAttributes;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
+import slimeknights.mantle.registration.object.MantleFluid;
+import slimeknights.mantle.util.FluidProperties;
 
 import java.util.function.Supplier;
 
 /**
  * Fluid properties builder class, since the Forge one requires too many suppliers that we do not have access to yet
  */
-@Accessors(fluent = true)
 public class FluidBuilder {
   private final FluidAttributes attributes;
   private boolean canMultiply = false;
@@ -59,24 +60,56 @@ public class FluidBuilder {
     this.tickRate = tickRate;
   }
 
+  public FluidAttributes getAttributes() {
+    return attributes;
+  }
+
+  public boolean isCanMultiply() {
+    return canMultiply;
+  }
+
+  public Supplier<? extends Item> getBucket() {
+    return bucket;
+  }
+
+  public Supplier<? extends FluidBlock> getBlock() {
+    return block;
+  }
+
+  public int getSlopeFindDistance() {
+    return slopeFindDistance;
+  }
+
+  public int getLevelDecreasePerBlock() {
+    return levelDecreasePerBlock;
+  }
+
+  public float getExplosionResistance() {
+    return explosionResistance;
+  }
+
+  public int getTickRate() {
+    return tickRate;
+  }
+
   /**
    * Builds Forge fluid properties from this builder
    * @param still    Still fluid supplier
    * @param flowing  Flowing supplier
    * @return  Forge fluid properties
    */
-  public ForgeFlowingFluid.Properties build(Supplier<? extends Fluid> still, Supplier<? extends Fluid> flowing) {
-    //TODO: look at lint and see how i did custom fluids
-    ForgeFlowingFluid.Properties properties = new ForgeFlowingFluid.Properties(still, flowing, this.attributes)
-        .slopeFindDistance(this.slopeFindDistance)
-        .levelDecreasePerBlock(this.levelDecreasePerBlock)
-        .explosionResistance(this.explosionResistance)
-        .tickRate(this.tickRate)
-        .block(this.block)
-        .bucket(this.bucket);
-    if (this.canMultiply) {
-      properties.canMultiply();
-    }
-    return properties;
+  public FluidProperties build(Supplier<MantleFluid.Still> still, Supplier<MantleFluid.Flowing> flowing) {
+    return new FluidProperties(flowing.get(), still.get());
+//    ForgeFlowingFluid.Properties properties = new ForgeFlowingFluid.Properties(still, flowing, this.attributes)
+//        .slopeFindDistance(this.slopeFindDistance)
+//        .levelDecreasePerBlock(this.levelDecreasePerBlock)
+//        .explosionResistance(this.explosionResistance)
+//        .tickRate(this.tickRate)
+//        .block(this.block)
+//        .bucket(this.bucket);
+//    if (this.canMultiply) {
+//      properties.canMultiply();
+//    }
+//    return properties;
   }
 }
