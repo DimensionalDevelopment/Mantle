@@ -1,10 +1,10 @@
 package slimeknights.mantle.registration.object;
 
+import net.fabricmc.fabric.api.tag.TagRegistry;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
-import net.minecraft.tag.FluidTags;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -17,12 +17,11 @@ import java.util.function.Supplier;
  * @param <F>  Fluid class
  */
 @SuppressWarnings("WeakerAccess")
-public class FluidObject<F extends ForgeFlowingFluid> implements Supplier<F>, ItemConvertible {
+public class FluidObject<F extends Fluid> implements Supplier<F>, ItemConvertible {
   // TODO: make final in 1.17
   protected Identifier id;
   // TODO: make final in 1.17
   private Tag<Fluid> localTag;
-  private Tag<Fluid> forgeTag;
   private final Supplier<? extends F> still;
   private final Supplier<? extends F> flowing;
   @Nullable
@@ -31,8 +30,7 @@ public class FluidObject<F extends ForgeFlowingFluid> implements Supplier<F>, It
   /** Main constructor */
   public FluidObject(Identifier id, String tagName, Supplier<? extends F> still, Supplier<? extends F> flowing, @Nullable Supplier<? extends FluidBlock> block) {
     this.id = id;
-    this.localTag = FluidTags.createOptional(id);
-    this.forgeTag = FluidTags.createOptional(new Identifier("forge", tagName));
+    this.localTag = TagRegistry.fluid(id);
     this.still = still;
     this.flowing = flowing;
     this.block = block;
@@ -48,10 +46,11 @@ public class FluidObject<F extends ForgeFlowingFluid> implements Supplier<F>, It
 
   /** Gets the ID for this fluid object */
   public Identifier getId() {
-    if (id == null) {
-      id = Objects.requireNonNull(getStill().getRegistryName(), "Fluid has null ID");
-    }
-    return id;
+    throw new RuntimeException("we need to make our own map of fluids to identifiers because vanilla registries make this hard");
+//    if (id == null) {
+//      id = Objects.requireNonNull(getStill(), "Fluid has null ID");
+//    }
+//    return id;
   }
 
   /**
@@ -97,18 +96,10 @@ public class FluidObject<F extends ForgeFlowingFluid> implements Supplier<F>, It
   }
 
   /** Gets the mod local tag for this fluid object */
-  public IOptionalNamedTag<Fluid> getLocalTag() {
+  public Tag<Fluid> getLocalTag() {
     if (localTag == null) {
-      localTag = FluidTags.createOptional(getId());
+      localTag = TagRegistry.fluid(getId());
     }
     return localTag;
-  }
-
-  /** Gets the shared forge tag for this fluid object */
-  public IOptionalNamedTag<Fluid> getForgeTag() {
-    if (forgeTag == null) {
-      forgeTag = FluidTags.createOptional(new Identifier("forge", getId().getPath()));
-    }
-    return forgeTag;
   }
 }

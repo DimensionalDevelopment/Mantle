@@ -1,31 +1,25 @@
 package slimeknights.mantle.registration.adapter;
 
+import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
-import net.minecraftforge.common.extensions.IForgeContainerType;
-import net.minecraftforge.fml.network.IContainerFactory;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraft.util.Identifier;
 
 @SuppressWarnings("unused")
 public class ContainerTypeRegistryAdapter extends RegistryAdapter<ScreenHandlerType<?>> {
   /** @inheritDoc */
-  public ContainerTypeRegistryAdapter(IForgeRegistry<ScreenHandlerType<?>> registry, String modId) {
-    super(registry, modId);
-  }
-
-  /** @inheritDoc */
-  public ContainerTypeRegistryAdapter(IForgeRegistry<ScreenHandlerType<?>> registry) {
-    super(registry);
+  public ContainerTypeRegistryAdapter(String modId) {
+    super(modId);
   }
 
   /**
    * Registers a container type
-   * @param name     Container name
-   * @param factory  Container factory
    * @param <C>      Container type
+   * @param factory  Container factory
+   * @param name     Container name
    * @return  Registry object containing the container type
    */
-  public <C extends ScreenHandler> ScreenHandlerType<C> registerType(IContainerFactory<C> factory, String name) {
-    return register(IForgeContainerType.create(factory), name);
+  public <C extends ScreenHandler> ScreenHandlerType<?> registerType(ScreenHandlerRegistry.SimpleClientHandlerFactory<C> factory, Identifier name) {
+    return ScreenHandlerRegistry.registerSimple(name, factory);
   }
 }

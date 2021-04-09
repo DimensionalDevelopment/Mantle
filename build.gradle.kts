@@ -22,6 +22,11 @@ repositories {
         name = "BuildCraft"
         url = uri("https://mod-buildcraft.com/maven")
     }
+
+    maven {
+        name = "TerraformersMC"
+        url = uri("https://maven.terraformersmc.com/")
+    }
 }
 
 val modImplementationAndInclude by configurations.register("modImplementationAndInclude")
@@ -37,7 +42,9 @@ dependencies {
     modApi("alexiil.mc.lib", "libblockattributes-core", "0.8.9-pre.1")
     modApi("alexiil.mc.lib", "libblockattributes-fluids", "0.8.9-pre.1")
 
-    modRuntime("me.shedaniel", "RoughlyEnoughItems", "5.8.10")
+    modRuntime("com.terraformersmc:modmenu:1.16.9")
+
+//    modRuntime("me.shedaniel", "RoughlyEnoughItems", "5.8.10")
     modRuntime("curse.maven", "worldedit-225608", "3135186")
     modRuntime("curse.maven", "appleskin-248787", "2987255")
     modRuntime("curse.maven", "hwyla-253449", "3033613")
