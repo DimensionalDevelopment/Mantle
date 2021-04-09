@@ -92,4 +92,6 @@ tasks.remapJar {
     }
 }
 
-task test
+tasks.test {
+
+}
