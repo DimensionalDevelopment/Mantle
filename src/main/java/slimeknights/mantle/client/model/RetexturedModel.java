@@ -12,6 +12,7 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.client.render.model.ModelBakeSettings;
 import net.minecraft.client.render.model.ModelLoader;
@@ -53,7 +54,7 @@ import java.util.function.Function;
  * Model that dynamically retextures a list of textures based on data from {@link RetexturedHelper}.
  */
 @SuppressWarnings("WeakerAccess")
-public class RetexturedModel implements IModelGeometry<RetexturedModel> {
+public class RetexturedModel implements UnbakedModel {
   private final SimpleBlockModel model;
   private final Set<String> retextured;
 
@@ -64,14 +65,14 @@ public class RetexturedModel implements IModelGeometry<RetexturedModel> {
 
   @Override
   public Collection<SpriteIdentifier> getTextures(IModelConfiguration owner, Function<Identifier,UnbakedModel> modelGetter, Set<Pair<String,String>> missingTextureErrors) {
-    return model.getTextures(owner, modelGetter, missingTextureErrors);
+    return model.getTextures(owner, modelGetter, missingTextureErrors);get
   }
 
   @Override
-  public net.minecraft.client.render.model.BakedModel bake(IModelConfiguration owner, ModelLoader bakery, Function<SpriteIdentifier,Sprite> spriteGetter, ModelBakeSettings transform, ModelOverrideList overrides, Identifier location) {
+  public net.minecraft.client.render.model.BakedModel bake(ModelLoader bakery, Function<SpriteIdentifier,Sprite> spriteGetter, ModelBakeSettings transform, ModelOverrideList overrides, Identifier location) {
     // bake the model and return
-    net.minecraft.client.render.model.BakedModel baked = model.bakeModel(owner, transform, overrides, spriteGetter, location);
-    return new BakedModel(baked, owner, model, transform, getAllRetextured(owner, this.model, retextured));
+    net.minecraft.client.render.model.BakedModel baked = model.bakeModel(transform, overrides, spriteGetter, location);
+    return new BakedModel(baked, model, transform, getAllRetextured(this.model, retextured));
   }
 
   /**
@@ -94,7 +95,6 @@ public class RetexturedModel implements IModelGeometry<RetexturedModel> {
     }
     return ImmutableSet.copyOf(retextured);
   }
-
 
   /** Registered model loader instance registered */
   public static class Loader implements IModelLoader<RetexturedModel> {

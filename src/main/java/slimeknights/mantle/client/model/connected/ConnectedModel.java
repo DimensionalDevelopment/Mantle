@@ -8,11 +8,23 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
-import com.mojang.datafixers.util.Either;
-import com.mojang.datafixers.util.Pair;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
+
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
 import net.minecraft.block.BlockState;
+import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.client.render.model.ModelBakeSettings;
 import net.minecraft.client.render.model.ModelLoader;
@@ -33,40 +45,27 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Direction.Axis;
 import net.minecraft.util.math.Direction.Type;
 import net.minecraft.world.BlockRenderView;
+
+import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
+
 import net.minecraftforge.client.model.IModelConfiguration;
 import net.minecraftforge.client.model.IModelLoader;
-import net.minecraftforge.client.model.data.IModelData;
-import slimeknights.mantle.model.IModelData;
-import slimeknights.mantle.util.ModelProperty;
-import net.minecraftforge.client.model.geometry.IModelGeometry;
+
+import org.jetbrains.annotations.Nullable;
 import slimeknights.mantle.block.IMultipartConnectedBlock;
 import slimeknights.mantle.client.model.data.SinglePropertyData;
 import slimeknights.mantle.client.model.util.DynamicBakedWrapper;
 import slimeknights.mantle.client.model.util.ExtraTextureConfiguration;
 import slimeknights.mantle.client.model.util.ModelTextureIteratable;
 import slimeknights.mantle.client.model.util.SimpleBlockModel;
-
-import org.jetbrains.annotations.Nullable;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import slimeknights.mantle.model.IModelData;
+import slimeknights.mantle.util.ModelProperty;
 
 /**
  * Model that handles generating variants for connected textures
  */
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-public class ConnectedModel implements IModelGeometry<ConnectedModel> {
-
+public class ConnectedModel implements UnbakedModel {
   /** Property of the connections cache key. Contains a 6 bit number with each bit representing a direction */
   private static final ModelProperty<Byte> CONNECTIONS = new ModelProperty<>();
 
@@ -82,9 +81,16 @@ public class ConnectedModel implements IModelGeometry<ConnectedModel> {
   /** Map of full texture name to the resulting material, filled during {@link #getTextures(IModelConfiguration, Function, Set)} */
   private Map<String,SpriteIdentifier> extraTextures;
 
+  public ConnectedModel(SimpleBlockModel model, Map<String, String[]> connectedTextures, BiPredicate<BlockState, BlockState> connectionPredicate, Set<Direction> sides) {
+    this.model = model;
+    this.connectedTextures = connectedTextures;
+    this.connectionPredicate = connectionPredicate;
+    this.sides = sides;
+  }
+
   @Override
-  public Collection<SpriteIdentifier> getTextures(IModelConfiguration owner, Function<Identifier,UnbakedModel> modelGetter, Set<Pair<String,String>> missingTextureErrors) {
-    Collection<SpriteIdentifier> textures = model.getTextures(owner, modelGetter, missingTextureErrors);
+  public Collection<SpriteIdentifier> getTextureDependencies(Function<Identifier,UnbakedModel> modelGetter, Set<Pair<String,String>> missingTextureErrors) {
+    Collection<SpriteIdentifier> textures = model.getTextures(modelGetter, missingTextureErrors);
     // for all connected textures, add suffix textures
     Map<String, SpriteIdentifier> extraTextures = new HashMap<>();
     for (Entry<String,String[]> entry : connectedTextures.entrySet()) {
@@ -130,9 +136,25 @@ public class ConnectedModel implements IModelGeometry<ConnectedModel> {
   }
 
   @Override
-  public net.minecraft.client.render.model.BakedModel bake(IModelConfiguration owner, ModelLoader bakery, Function<SpriteIdentifier,Sprite> spriteGetter, ModelBakeSettings transform, ModelOverrideList overrides, Identifier location) {
+  public net.minecraft.client.render.model.BakedModel bake(ModelLoader bakery, Function<SpriteIdentifier,Sprite> spriteGetter, ModelBakeSettings transform, ModelOverrideList overrides, Identifier location) {
     net.minecraft.client.render.model.BakedModel baked = model.bakeModel(owner, transform, overrides, spriteGetter, location);
     return new BakedModel(this, new ExtraTextureConfiguration(owner, extraTextures), transform, baked);
+  }
+
+  @Override
+  public Collection<Identifier> getModelDependencies() {
+    return null;
+  }
+
+  @Override
+  public Collection<SpriteIdentifier> getTextureDependencies(Function<Identifier, UnbakedModel> unbakedModelGetter, Set<Pair<String, String>> unresolvedTextureReferences) {
+    return null;
+  }
+
+  @Nullable
+  @Override
+  public net.minecraft.client.render.model.BakedModel bake(ModelLoader loader, Function<SpriteIdentifier, Sprite> textureGetter, ModelBakeSettings rotationContainer, Identifier modelId) {
+    return null;
   }
 
   @SuppressWarnings("WeakerAccess")

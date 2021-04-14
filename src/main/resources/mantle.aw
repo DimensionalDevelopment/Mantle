@@ -25,3 +25,7 @@ accessible  method  net/minecraft/client/gui/DrawableHelper    drawTexturedQuad 
 accessible method net/minecraft/recipe/RecipeManager getAllOfType (Lnet/minecraft/recipe/RecipeType;)Ljava/util/Map;
 
 accessible method   net/minecraft/block/StairsBlock    <init> (Lnet/minecraft/block/BlockState;Lnet/minecraft/block/AbstractBlock$Settings;)V
+
+accessible field net/minecraft/client/render/model/json/JsonUnbakedModel parent Lnet/minecraft/client/render/model/json/JsonUnbakedModel;
+
+accessible field net/minecraft/client/render/model/json/JsonUnbakedModel parentId Lnet/minecraft/util/Identifier;

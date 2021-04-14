@@ -7,12 +7,21 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import com.mojang.datafixers.util.Either;
-import com.mojang.datafixers.util.Pair;
-import lombok.Getter;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.BasicBakedModel;
 import net.minecraft.client.render.model.ModelBakeSettings;
+import net.minecraft.client.render.model.ModelLoader;
 import net.minecraft.client.render.model.UnbakedModel;
 import net.minecraft.client.render.model.json.JsonUnbakedModel;
 import net.minecraft.client.render.model.json.ModelElement;
@@ -26,46 +35,39 @@ import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import net.minecraft.util.math.Direction;
+
+import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
+
 import net.minecraftforge.client.model.IModelConfiguration;
 import net.minecraftforge.client.model.IModelLoader;
-import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.client.model.geometry.IModelGeometry;
-import slimeknights.mantle.Mantle;
 
-import org.jetbrains.annotations.Nonnull;
+import net.fabricmc.fabric.api.client.model.ModelProviderContext;
+import net.fabricmc.fabric.api.client.model.ModelProviderException;
+import net.fabricmc.fabric.api.client.model.ModelResourceProvider;
+import net.fabricmc.fabric.api.renderer.v1.material.RenderMaterial;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import slimeknights.mantle.client.model.IModelGeometry;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import slimeknights.mantle.Mantle;
 
 /**
  * Simplier version of {@link JsonUnbakedModel} for use in an {@link net.minecraftforge.client.model.IModelLoader}, as the owner handles most block model properties
  */
 @SuppressWarnings("WeakerAccess")
-public class SimpleBlockModel implements IModelGeometry<SimpleBlockModel> {
+public class SimpleBlockModel implements UnbakedModel {
   /** Model loader for vanilla block model, mainly intended for use in fallback registration */
   public static final Loader LOADER = new Loader();
   /** Location used for baking dynamic models, name does not matter so just using a constant */
   private static final Identifier BAKE_LOCATION = Mantle.getResource("dynamic_model_baking");
 
   /** Parent model location, used to fetch parts and for textures if the owner is not a block model */
-  @Getter
   @Nullable
   private Identifier parentLocation;
   /** Model parts for baked model, if empty uses parent parts */
   private final List<ModelElement> parts;
   /** Fallback textures in case the owner does not contain a block model */
-  @Getter
   private final Map<String,Either<SpriteIdentifier, String>> textures;
-  @Getter
+
   private JsonUnbakedModel parent;
 
   /**
@@ -98,7 +100,7 @@ public class SimpleBlockModel implements IModelGeometry<SimpleBlockModel> {
    * Fetches parent models for this model and its parents
    * @param modelGetter  Model getter function
    */
-  public void fetchParent(IModelConfiguration owner, Function<Identifier,UnbakedModel> modelGetter) {
+  public void fetchParent(Function<Identifier, UnbakedModel> modelGetter) {
     // no work if no parent or the parent is fetched already
     if (parent != null || parentLocation == null) {
       return;
@@ -108,7 +110,7 @@ public class SimpleBlockModel implements IModelGeometry<SimpleBlockModel> {
     Set<UnbakedModel> chain = Sets.newLinkedHashSet();
 
     // load the first model directly
-    parent = getParent(modelGetter, chain, parentLocation, owner.getModelName());
+    parent = getParent(modelGetter, chain, parentLocation, "");
     // null means no model, so set missing
     if (parent == null) {
       parent = getMissing(modelGetter);
@@ -179,7 +181,7 @@ public class SimpleBlockModel implements IModelGeometry<SimpleBlockModel> {
    * @param missingTextureErrors  Missing texture set
    * @return  Textures dependencies
    */
-  public static Collection<SpriteIdentifier> getTextures(IModelConfiguration owner, List<ModelElement> elements, Set<Pair<String,String>> missingTextureErrors) {
+  public static Collection<SpriteIdentifier> getTextures(List<ModelElement> elements, Set<Pair<String,String>> missingTextureErrors) {
     // always need a particle texture
     Set<SpriteIdentifier> textures = Sets.newHashSet(owner.resolveTexture("particle"));
     // iterate all elements, fetching needed textures from the material
@@ -203,9 +205,9 @@ public class SimpleBlockModel implements IModelGeometry<SimpleBlockModel> {
    * @return  Textures dependencies
    */
   @Override
-  public Collection<SpriteIdentifier> getTextures(IModelConfiguration owner, Function<Identifier,UnbakedModel> modelGetter, Set<Pair<String,String>> missingTextureErrors) {
-    this.fetchParent(owner, modelGetter);
-    return getTextures(owner, getElements(), missingTextureErrors);
+  public Collection<SpriteIdentifier> getTextureDependencies(Function<Identifier,UnbakedModel> modelGetter, Set<Pair<String,String>> missingTextureErrors) {
+    this.fetchParent(modelGetter);
+    return getTextures(getElements(), missingTextureErrors);
   }
 
 
@@ -253,7 +255,7 @@ public class SimpleBlockModel implements IModelGeometry<SimpleBlockModel> {
    * @return Baked model
    */
   public static BakedModel bakeDynamic(IModelConfiguration owner, List<ModelElement> elements, ModelBakeSettings transform) {
-    return bakeModel(owner, elements, transform, ModelOverrideList.EMPTY, ModelLoader.defaultTextureGetter(), BAKE_LOCATION);
+    return bakeModel(owner, elements, transform, ModelOverrideList.EMPTY, RenderMaterial ModelLoader.defaultTextureGetter(), BAKE_LOCATION);
   }
 
   /**
@@ -345,14 +347,32 @@ public class SimpleBlockModel implements IModelGeometry<SimpleBlockModel> {
     throw new JsonSyntaxException("Missing " + name + ", expected to find a JsonArray or JsonObject");
   }
 
+  public @Nullable Identifier getParentLocation() {
+    return this.parentLocation;
+  }
+
+  public Map<String, Either<SpriteIdentifier, String>> getTextures() {
+    return this.textures;
+  }
+
+  public JsonUnbakedModel getParent() {
+    return this.parent;
+  }
+
   /** Logic to implement a vanilla block model */
-  private static class Loader implements IModelLoader<SimpleBlockModel> {
+  private static class Loader implements ModelResourceProvider {
     @Override
     public void apply(ResourceManager resourceManager) {}
 
     @Override
     public SimpleBlockModel read(JsonDeserializationContext context, JsonObject json) {
       return deserialize(context, json);
+    }
+
+    @Override
+    public @Nullable UnbakedModel loadModelResource(Identifier identifier, ModelProviderContext modelProviderContext) throws ModelProviderException {
+      modelProviderContext
+      return null;
     }
   }
 }

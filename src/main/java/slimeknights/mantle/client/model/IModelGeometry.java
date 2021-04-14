@@ -2,6 +2,8 @@ package slimeknights.mantle.client.model;
 
 import com.mojang.datafixers.util.Pair;
 import net.fabricmc.fabric.api.renderer.v1.material.RenderMaterial;
+
+import net.minecraft.client.render.model.ModelLoader;
 import net.minecraft.client.render.model.UnbakedModel;
 import net.minecraft.util.Identifier;
 
@@ -24,7 +26,7 @@ public interface IModelGeometry<T extends IModelGeometry<T>> {
     return Optional.empty();
   }
 
-  IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform modelTransform, ItemOverrideList overrides, Identifier modelLocation);
+  IBakedModel bake(IModelConfiguration owner, ModelLoader bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform modelTransform, ItemOverrideList overrides, Identifier modelLocation);
 
   Collection<RenderMaterial> getTextures(IModelConfiguration owner, Function<Identifier, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors);
 }

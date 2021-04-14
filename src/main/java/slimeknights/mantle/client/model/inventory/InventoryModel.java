@@ -2,9 +2,12 @@ package slimeknights.mantle.client.model.inventory;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
-import com.mojang.datafixers.util.Pair;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+
 import net.minecraft.client.render.model.ModelBakeSettings;
 import net.minecraft.client.render.model.ModelLoader;
 import net.minecraft.client.render.model.UnbakedModel;
@@ -13,31 +16,34 @@ import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
-import net.minecraftforge.client.model.BakedModelWrapper;
-import net.minecraftforge.client.model.IModelConfiguration;
-import net.minecraftforge.client.model.IModelLoader;
-import net.minecraftforge.client.model.geometry.IModelGeometry;
-import slimeknights.mantle.client.model.IModelConfiguration;
-import slimeknights.mantle.client.model.IModelGeometry;
-import slimeknights.mantle.client.model.util.SimpleBlockModel;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
+import com.mojang.datafixers.util.Pair;
+
+import net.minecraftforge.client.model.IModelLoader;
+
+import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
+import slimeknights.mantle.client.model.IModelConfiguration;
+import slimeknights.mantle.client.model.util.SimpleBlockModel;
 
 /**
  * This model contains a list of multiple items to display in a TESR
  */
-@AllArgsConstructor
-public class InventoryModel implements IModelGeometry<InventoryModel> {
+public class InventoryModel implements UnbakedModel {
   protected final SimpleBlockModel model;
   protected final List<ModelItem> items;
 
-  @Override
-  public Collection<SpriteIdentifier> getTextures(IModelConfiguration owner, Function<Identifier,UnbakedModel> modelGetter, Set<Pair<String,String>> missingTextureErrors) {
-    return model.getTextures(owner, modelGetter, missingTextureErrors);
+  public InventoryModel(SimpleBlockModel model, List<ModelItem> items) {
+    this.model = model;
+    this.items = items;
   }
+
+  @Override
+  public Collection<SpriteIdentifier> getTextureDependencies(Function<Identifier,UnbakedModel> modelGetter, Set<Pair<String,String>> missingTextureErrors) {
+    return model.getTextures(modelGetter, missingTextureErrors);
+  }
+
+  @Override
+  public Collection<SpriteIdentifier> getTextures(IModelConfiguration owner,
 
   @Override
   public net.minecraft.client.render.model.BakedModel bake(IModelConfiguration owner, ModelLoader bakery, Function<SpriteIdentifier,Sprite> spriteGetter, ModelBakeSettings transform, ModelOverrideList overrides, Identifier location) {
@@ -47,12 +53,15 @@ public class InventoryModel implements IModelGeometry<InventoryModel> {
 
   /** Baked model, mostly a data wrapper around a normal model */
   @SuppressWarnings("WeakerAccess")
-  public static class BakedModel extends BakedModelWrapper<net.minecraft.client.render.model.BakedModel> {
-    @Getter
+  public static class BakedModel extends ForwardingBakedModel {
     private final List<ModelItem> items;
     public BakedModel(net.minecraft.client.render.model.BakedModel originalModel, List<ModelItem> items) {
-      super(originalModel);
+      super.wrapped = originalModel;
       this.items = items;
+    }
+
+    public List<ModelItem> getItems() {
+      return this.items;
     }
   }
 
