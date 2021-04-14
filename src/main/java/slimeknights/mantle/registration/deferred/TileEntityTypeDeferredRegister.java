@@ -1,5 +1,6 @@
 package slimeknights.mantle.registration.deferred;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.types.Type;
 import net.minecraft.block.Block;
@@ -40,8 +41,8 @@ public class TileEntityTypeDeferredRegister extends DeferredRegisterWrapper {
    * @param <T>      Tile entity type
    * @return  Registry object instance
    */
-  public <T extends BlockEntity> BlockEntityType<?> register(String name, Supplier<? extends T> factory, Supplier<? extends Block> block) {
-    return Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(modID, name), BlockEntityType.Builder.create(factory, block.get()).build(null));
+  public <T extends BlockEntity> BlockEntityType<T> register(String name, Supplier<? extends T> factory, Supplier<? extends Block> block) {
+    return (BlockEntityType<T>) Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(modID, name), BlockEntityType.Builder.create(factory, block.get()).build(null));
   }
 
   /**
@@ -54,6 +55,19 @@ public class TileEntityTypeDeferredRegister extends DeferredRegisterWrapper {
    */
   @SuppressWarnings("ConstantConditions")
   public <T extends BlockEntity> BlockEntityType<T> register(String name, Supplier<? extends T> factory, Consumer<ImmutableSet.Builder<Block>> blockCollector) {
-    throw new RuntimeException("Unable to handle a Consumer<ImmutableSet.Builder<Block>>. seriously who the fuck came up with that?");
+    return Registry.register(Registry.BLOCK_ENTITY_TYPE,
+            new Identifier(modID, name), doConcernMagic(factory, blockCollector));
+  }
+
+  private <T extends BlockEntity> BlockEntityType<T> doConcernMagic(Supplier<? extends T> factory, Consumer<ImmutableSet.Builder<Block>> blockCollector) {
+    ImmutableSet.Builder<Block> blocks = new ImmutableSet.Builder<>();
+    blockCollector.accept(blocks);
+    ImmutableList<Block> builtBlocks = blocks.build().asList();
+    Block[] realBlocks = new Block[builtBlocks.size()];
+    for (int i = 0; i < builtBlocks.size(); i++) {
+      realBlocks[i] = builtBlocks.asList().get(i);
+    }
+
+    return (BlockEntityType<T>) BlockEntityType.Builder.create(factory, realBlocks).build(null);
   }
 }
