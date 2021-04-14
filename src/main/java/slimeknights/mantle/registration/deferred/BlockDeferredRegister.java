@@ -3,6 +3,7 @@ package slimeknights.mantle.registration.deferred;
 import net.minecraft.block.*;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.Registry;
@@ -57,7 +58,7 @@ public class BlockDeferredRegister extends DeferredRegisterWrapper {
    */
   public ItemObject<Block> register(String name, Supplier<Block> block, final Function<Block, ? extends BlockItem> item) {
     Block blockObj = registerNoItem(name, block);
-    Registry.register(itemRegister, name, item.apply(blockObj));
+    Registry.register(itemRegister, new Identifier(modID, name), item.apply(blockObj));
     return new ItemObject<>(blockObj);
   }
 

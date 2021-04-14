@@ -3,6 +3,7 @@ package slimeknights.mantle.registration.deferred;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.SpawnEggItem;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Lazy;
 import net.minecraft.util.registry.Registry;
 import slimeknights.mantle.registration.ItemProperties;
@@ -27,7 +28,7 @@ public class EntityTypeDeferredRegister extends DeferredRegisterWrapper {
    * @return  Entity registry object
    */
   public <T extends Entity> EntityType<T> register(String name, Supplier<EntityType.Builder<T>> sup) {
-    return Registry.register(Registry.ENTITY_TYPE, name, sup.get().build(name));
+    return Registry.register(Registry.ENTITY_TYPE, new Identifier(modID, name), sup.get().build(name));
   }
 
   /**

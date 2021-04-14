@@ -1,5 +1,6 @@
 package slimeknights.mantle.registration.object;
 
+import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.util.Identifier;
@@ -25,7 +26,11 @@ public class ItemObject<I extends ItemConvertible> implements Supplier<I>, ItemC
    */
   public ItemObject(I entry) {
     this.entry = entry;
-    this.name = Registry.ITEM.getId((Item) entry);
+    if(entry instanceof Block) {
+      this.name = Registry.BLOCK.getId((Block) entry);
+    } else {
+      this.name = Registry.ITEM.getId((Item) entry);
+    }
   }
 
 

@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 @SuppressWarnings("WeakerAccess")
 public abstract class DeferredRegisterWrapper{
   /** Mod ID for registration */
-  private final String modID;
+  public final String modID;
   /* Utilities */
 
   public DeferredRegisterWrapper(String modID) {

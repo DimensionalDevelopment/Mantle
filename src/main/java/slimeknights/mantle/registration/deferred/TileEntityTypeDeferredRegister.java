@@ -6,6 +6,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.datafixer.TypeReferences;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
@@ -39,8 +40,8 @@ public class TileEntityTypeDeferredRegister extends DeferredRegisterWrapper {
    * @param <T>      Tile entity type
    * @return  Registry object instance
    */
-  public <T extends BlockEntity> BlockEntityType<T> register(String name, Supplier<? extends T> factory, Supplier<? extends Block> block) {
-    throw new RuntimeException("WHAT THE FUCK FRWHYTRJYTJSDFWHRYJKTYETRHTR");
+  public <T extends BlockEntity> BlockEntityType<?> register(String name, Supplier<? extends T> factory, Supplier<? extends Block> block) {
+    return Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(modID, name), BlockEntityType.Builder.create(factory, block.get()).build(null));
   }
 
   /**
@@ -53,6 +54,6 @@ public class TileEntityTypeDeferredRegister extends DeferredRegisterWrapper {
    */
   @SuppressWarnings("ConstantConditions")
   public <T extends BlockEntity> BlockEntityType<T> register(String name, Supplier<? extends T> factory, Consumer<ImmutableSet.Builder<Block>> blockCollector) {
-    throw new RuntimeException("WHAT THE FUCK FRWHYTRJYTJSDFWHRYJKTYETRHTR");
+    throw new RuntimeException("Unable to handle a Consumer<ImmutableSet.Builder<Block>>. seriously who the fuck came up with that?");
   }
 }

@@ -7,7 +7,7 @@ plugins {
 
 base.archivesBaseName = "mantle"
 group = "slimeknights"
-version = "1.6.8-SNAPSHOT"
+version = "1.6.11-SNAPSHOT"
 
 repositories {
     maven {

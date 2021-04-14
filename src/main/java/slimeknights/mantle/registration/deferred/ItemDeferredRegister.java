@@ -1,6 +1,7 @@
 package slimeknights.mantle.registration.deferred;
 
 import net.minecraft.item.Item;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.registry.Registry;
 import slimeknights.mantle.registration.object.EnumObject;
@@ -27,7 +28,7 @@ public class ItemDeferredRegister extends DeferredRegisterWrapper {
    * @return  Item registry object
    */
   public <I extends Item> ItemObject<I> register(String name, Supplier<I> sup) {
-    return new ItemObject<>(Registry.register(Registry.ITEM, name, sup.get()));
+    return new ItemObject<>(Registry.register(Registry.ITEM, new Identifier(modID, name), sup.get()));
   }
 
   /**
