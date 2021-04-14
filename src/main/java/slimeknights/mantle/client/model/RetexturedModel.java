@@ -33,6 +33,8 @@ import net.minecraftforge.client.model.IModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.geometry.IModelGeometry;
+
+import net.fabricmc.fabric.api.client.model.ModelProviderContext;
 import slimeknights.mantle.client.model.util.DynamicBakedWrapper;
 import slimeknights.mantle.client.model.util.ModelConfigurationWrapper;
 import slimeknights.mantle.client.model.util.ModelHelper;
@@ -97,20 +99,17 @@ public class RetexturedModel implements UnbakedModel {
   }
 
   /** Registered model loader instance registered */
-  public static class Loader implements IModelLoader<RetexturedModel> {
+  public static class Loader implements JsonModelResourceProvider {
     public static final Loader INSTANCE = new Loader();
     private Loader() {}
 
     @Override
-    public void apply(ResourceManager resourceManager) {}
-
-    @Override
-    public RetexturedModel read(JsonDeserializationContext context, JsonObject json) {
+    public RetexturedModel loadJsonModelResource(Identifier resourceId, JsonObject jsonObject, ModelProviderContext context) {
       // get base model
-      SimpleBlockModel model = SimpleBlockModel.deserialize(context, json);
+      SimpleBlockModel model = SimpleBlockModel.deserialize(jsonObject);
 
       // get list of textures to retexture
-      Set<String> retextured = getRetextured(json);
+      Set<String> retextured = getRetextured(jsonObject);
 
       // return retextured model
       return new RetexturedModel(model, retextured);

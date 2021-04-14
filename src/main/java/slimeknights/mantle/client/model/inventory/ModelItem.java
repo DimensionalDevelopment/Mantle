@@ -1,28 +1,25 @@
 package slimeknights.mantle.client.model.inventory;
 
 import com.google.gson.JsonObject;
-import lombok.Getter;
-import net.minecraft.client.util.math.Vector3f;
-import slimeknights.mantle.client.model.util.ModelHelper;
-import slimeknights.mantle.util.JsonHelper;
 
 import java.util.List;
+
+import net.minecraft.client.util.math.Vector3f;
+
+import slimeknights.mantle.client.model.util.ModelHelper;
+import slimeknights.mantle.util.JsonHelper;
 
 public class ModelItem {
   /** Model item for rendering no item */
   private static final ModelItem EMPTY = new ModelItem(new Vector3f(0, 0, 0), 0, 0, 0);
 
   /** Item center location in pixels */
-  @Getter
   private final Vector3f center;
   /** Item size in pixels. If 0, item is skipped */
-  @Getter
   private final float size;
   /** X axis rotation, applied first */
-  @Getter
   private final float x;
   /** Y axis rotation, applied second */
-  @Getter
   private final float y;
 
   /** Item center location in percentages, lazy loaded */
@@ -93,5 +90,21 @@ public class ModelItem {
    */
   public static List<ModelItem> listFromJson(JsonObject parent, String key) {
     return JsonHelper.parseList(parent, key, ModelItem::fromJson);
+  }
+
+  public Vector3f getCenter() {
+    return this.center;
+  }
+
+  public float getSize() {
+    return this.size;
+  }
+
+  public float getX() {
+    return this.x;
+  }
+
+  public float getY() {
+    return this.y;
   }
 }

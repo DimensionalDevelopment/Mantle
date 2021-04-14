@@ -21,8 +21,10 @@ import com.mojang.datafixers.util.Pair;
 
 import net.minecraftforge.client.model.IModelLoader;
 
+import net.fabricmc.fabric.api.client.model.ModelProviderContext;
 import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
 import slimeknights.mantle.client.model.IModelConfiguration;
+import slimeknights.mantle.client.model.JsonModelResourceProvider;
 import slimeknights.mantle.client.model.util.SimpleBlockModel;
 
 /**
@@ -66,19 +68,16 @@ public class InventoryModel implements UnbakedModel {
   }
 
   /** Loader for this model */
-  public static class Loader implements IModelLoader<InventoryModel> {
+  public static class Loader implements JsonModelResourceProvider {
     /**
      * Shared loader instance
      */
     public static final Loader INSTANCE = new Loader();
 
     @Override
-    public void apply(ResourceManager resourceManager) {}
-
-    @Override
-    public InventoryModel read(JsonDeserializationContext deserializationContext, JsonObject modelContents) {
-      SimpleBlockModel model = SimpleBlockModel.deserialize(deserializationContext, modelContents);
-      List<ModelItem> items = ModelItem.listFromJson(modelContents, "items");
+    public UnbakedModel loadJsonModelResource(Identifier resourceId, JsonObject jsonObject, ModelProviderContext context) {
+      SimpleBlockModel model = SimpleBlockModel.deserialize(jsonObject);
+      List<ModelItem> items = ModelItem.listFromJson(jsonObject, "items");
       return new InventoryModel(model, items);
     }
   }

@@ -49,6 +49,7 @@ import net.fabricmc.fabric.api.renderer.v1.material.RenderMaterial;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import slimeknights.mantle.Mantle;
+import slimeknights.mantle.client.model.JsonModelResourceProvider;
 
 /**
  * Simplier version of {@link JsonUnbakedModel} for use in an {@link net.minecraftforge.client.model.IModelLoader}, as the owner handles most block model properties
@@ -295,7 +296,7 @@ public class SimpleBlockModel implements UnbakedModel {
    * @param json     Json element containing the model
    * @return  Serialized JSON
    */
-  public static SimpleBlockModel deserialize(JsonDeserializationContext context, JsonObject json) {
+  public static SimpleBlockModel deserialize(JsonObject json) {
     // parent, null if missing
     String parentName = JsonHelper.getString(json, "parent", "");
     Identifier parent = parentName.isEmpty() ? null : new Identifier(parentName);
@@ -317,7 +318,7 @@ public class SimpleBlockModel implements UnbakedModel {
     // elements, empty list if missing
     List<ModelElement> parts;
     if (json.has("elements")) {
-      parts = getModelElements(context, JsonHelper.getArray(json, "elements"), "elements");
+      parts = getModelElements(JsonHelper.getArray(json, "elements"), "elements");
     } else {
       parts = Collections.emptyList();
     }
@@ -330,16 +331,16 @@ public class SimpleBlockModel implements UnbakedModel {
    * @param array    Json array
    * @return  Model list
    */
-  public static List<ModelElement> getModelElements(JsonDeserializationContext context, JsonElement array, String name) {
+  public static List<ModelElement> getModelElements(JsonElement array, String name) {
     // if just one element, array is optional
     if (array.isJsonObject()) {
-      return ImmutableList.of(context.deserialize(array.getAsJsonObject(), ModelElement.class));
+      return ImmutableList.of(JsonUnbakedModel.GSON.fromJson(array.getAsJsonObject(), ModelElement.class));
     }
     // if an array, get array of elements
     if (array.isJsonArray()) {
       ImmutableList.Builder<ModelElement> builder = ImmutableList.builder();
       for(JsonElement json : array.getAsJsonArray()) {
-        builder.add((ModelElement)context.deserialize(json, ModelElement.class));
+        builder.add(JsonUnbakedModel.GSON.fromJson(json, ModelElement.class));
       }
       return builder.build();
     }
@@ -360,19 +361,11 @@ public class SimpleBlockModel implements UnbakedModel {
   }
 
   /** Logic to implement a vanilla block model */
-  private static class Loader implements ModelResourceProvider {
-    @Override
-    public void apply(ResourceManager resourceManager) {}
+  private static class Loader implements JsonModelResourceProvider {
 
     @Override
-    public SimpleBlockModel read(JsonDeserializationContext context, JsonObject json) {
-      return deserialize(context, json);
-    }
-
-    @Override
-    public @Nullable UnbakedModel loadModelResource(Identifier identifier, ModelProviderContext modelProviderContext) throws ModelProviderException {
-      modelProviderContext
-      return null;
+    public UnbakedModel loadJsonModelResource(Identifier resourceId, JsonObject jsonObject, ModelProviderContext context) {
+      return deserialize(jsonObject);
     }
   }
 }

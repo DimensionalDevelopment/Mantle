@@ -52,8 +52,10 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraftforge.client.model.IModelConfiguration;
 import net.minecraftforge.client.model.IModelLoader;
 
+import net.fabricmc.fabric.api.client.model.ModelProviderContext;
 import org.jetbrains.annotations.Nullable;
 import slimeknights.mantle.block.IMultipartConnectedBlock;
+import slimeknights.mantle.client.model.JsonModelResourceProvider;
 import slimeknights.mantle.client.model.data.SinglePropertyData;
 import slimeknights.mantle.client.model.util.DynamicBakedWrapper;
 import slimeknights.mantle.client.model.util.ExtraTextureConfiguration;
@@ -443,19 +445,16 @@ public class ConnectedModel implements UnbakedModel {
   }
 
   /** Loader class containing singleton instance */
-  public static class Loader implements IModelLoader<ConnectedModel> {
+  public static class Loader implements JsonModelResourceProvider {
     /** Shared loader instance */
     public static final ConnectedModel.Loader INSTANCE = new ConnectedModel.Loader();
 
     @Override
-    public void apply(ResourceManager resourceManager) {}
-
-    @Override
-    public ConnectedModel read(JsonDeserializationContext context, JsonObject json) {
-      SimpleBlockModel model = SimpleBlockModel.deserialize(context, json);
+    public UnbakedModel loadJsonModelResource(Identifier resourceId, JsonObject jsonObject, ModelProviderContext context) {
+      SimpleBlockModel model = SimpleBlockModel.deserialize(jsonObject);
 
       // root object for all model data
-      JsonObject data = JsonHelper.getObject(json, "connection");
+      JsonObject data = JsonHelper.getObject(jsonObject, "connection");
 
       // need at least one connected texture
       JsonObject connected = JsonHelper.getObject(data, "textures");
