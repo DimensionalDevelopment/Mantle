@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "#c:ingots/iron",
+    "#c:ingots/gold",
+    "#c:ingots/brick",
+    "#c:ingots/nether_brick",
+    "#c:ingots/netherite"
+  ]
+}
