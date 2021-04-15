@@ -42,7 +42,7 @@ public class EntityTypeDeferredRegister extends DeferredRegisterWrapper {
    */
   public <T extends Entity> EntityType<T> registerWithEgg(String name, Supplier<EntityType.Builder<T>> sup, int primary, int secondary) {
     EntityType<T> type = sup.get().build(resourceName(name));
-    Registry.register(Registry.ITEM,name + "_spawn_egg", new SpawnEggItem(type, primary, secondary, ItemProperties.EGG_PROPS));
-    return Registry.register(Registry.ENTITY_TYPE, name, type);
+    Registry.register(Registry.ITEM,new Identifier(modID, name + "_spawn_egg"), new SpawnEggItem(type, primary, secondary, ItemProperties.EGG_PROPS));
+    return Registry.register(Registry.ENTITY_TYPE, new Identifier(modID, name), type);
   }
 }

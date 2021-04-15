@@ -319,7 +319,8 @@ public class BaseContainer<TILE extends BlockEntity> extends ScreenHandler {
     if (buf == null) {
       return null;
     }
-    throw new RuntimeException("Fuck");
+    return (TILE) MinecraftClient.getInstance().world.getBlockEntity(buf.readBlockPos());
+//    throw new RuntimeException("Fuck");
 //    return DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () -> () -> TileEntityHelper.getTile(type, MinecraftClient.getInstance().world, buf.readBlockPos()).orElse(null));
   }
 }

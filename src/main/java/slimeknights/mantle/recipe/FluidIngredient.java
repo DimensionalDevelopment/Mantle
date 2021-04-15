@@ -24,6 +24,7 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import net.minecraft.util.registry.Registry;
 import slimeknights.mantle.util.JsonHelper;
 
 // TODO: move to ingredient package in 1.17
@@ -312,7 +313,7 @@ public abstract class FluidIngredient {
      * @return Fluid ingredient instance
      */
     private static FluidMatch deserialize(JsonObject json) {
-      FluidKey fluid = FluidKey.fromJson(json.get("name").getAsJsonObject());
+      FluidKey fluid = FluidKeys.get(Registry.FLUID.get(Identifier.tryParse(json.get("name").getAsString())));
       if (fluid == null || fluid.isEmpty()) {
         throw new JsonSyntaxException("Unknown fluid '" + fluid.name + "'");
       }

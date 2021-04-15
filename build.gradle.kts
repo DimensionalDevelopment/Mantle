@@ -7,7 +7,7 @@ plugins {
 
 base.archivesBaseName = "mantle"
 group = "slimeknights"
-version = "1.6.14-SNAPSHOT"
+version = "1.6.24-SNAPSHOT"
 
 repositories {
     maven {
@@ -50,13 +50,10 @@ dependencies {
 
     modRuntime("com.terraformersmc:modmenu:1.16.9")
 
-//    modRuntime("me.shedaniel", "RoughlyEnoughItems", "5.8.10")
+    modRuntime("me.shedaniel", "RoughlyEnoughItems", "5.11.202")
     modRuntime("curse.maven", "worldedit-225608", "3135186")
     modRuntime("curse.maven", "appleskin-248787", "2987255")
     modRuntime("curse.maven", "hwyla-253449", "3033613")
-
-
-
 
     add(sourceSets.main.get().getTaskName("mod", JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME), modImplementationAndInclude)
     add(net.fabricmc.loom.util.Constants.Configurations.INCLUDE, modImplementationAndInclude)
@@ -65,6 +62,8 @@ dependencies {
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
+
+    withSourcesJar()
 }
 
 loom {
@@ -104,6 +103,10 @@ configure<PublishingExtension> {
         create<MavenPublication>("mavenJava") {
             artifact(tasks.remapJar) {
                 classifier = null
+            }
+
+            artifact(tasks.remapSourcesJar) {
+                classifier = "sources"
             }
         }
     }

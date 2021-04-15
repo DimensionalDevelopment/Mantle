@@ -50,7 +50,7 @@ public class NetworkWrapper {
    */
   public void registerPacket(Class<Object> clazz, BiConsumer<Object, PacketByteBuf> encoder, Function<PacketByteBuf, Object> decoder, TriConsumer<Object, PlayerEntity, PacketSender> consumer, @Nullable NetworkSide direction) {
     //Workaround for the current system
-    Identifier channelName = Mantle.getResource(clazz.getSimpleName());
+    Identifier channelName = Mantle.getResource(clazz.getSimpleName().toLowerCase());
 
     encoders.add(encoder);
 
@@ -80,7 +80,7 @@ public class NetworkWrapper {
    */
   public void sendToServer(Object msg) {
     PacketByteBuf packetByteBuf = PacketByteBufs.create();
-    Identifier channelName = Mantle.getResource(msg.getClass().getSimpleName());
+    Identifier channelName = Mantle.getResource(msg.getClass().getSimpleName().toLowerCase());
     for (BiConsumer<Object, PacketByteBuf> encoder : encoders) {
       encoder.accept(msg, packetByteBuf);
     }
@@ -94,7 +94,7 @@ public class NetworkWrapper {
    */
   public void send(ServerPlayerEntity target, Object msg) {
     PacketByteBuf packetByteBuf = PacketByteBufs.create();
-    Identifier channelName = Mantle.getResource(msg.getClass().getSimpleName());
+    Identifier channelName = Mantle.getResource(msg.getClass().getSimpleName().toLowerCase());
     for (BiConsumer<Object, PacketByteBuf> encoder : encoders) {
       encoder.accept(msg, packetByteBuf);
     }

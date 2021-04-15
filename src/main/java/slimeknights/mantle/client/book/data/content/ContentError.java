@@ -56,16 +56,16 @@ public class ContentError extends PageContent {
       text[2].paragraph = true;
     }
 
-    text[3] = TextData.LINEBREAK;
+//    text[3] = TextData.LINEBREAK;
 
-    if (stackTrace != null) {
-      for (int i = 0; i < stackTrace.length && 5 + i * 2 < text.length; i++) {
-        text[4 + i * 2] = new TextData(stackTrace[i].toString());
-        text[4 + i * 2].text += "\n";
-        text[4 + i * 2].color = "dark_red";
-        text[5 + i * 2] = TextData.LINEBREAK;
-      }
-    }
+//    if (stackTrace != null) {
+//      for (int i = 0; i < stackTrace.length && 5 + i * 2 < text.length; i++) {
+//        text[4 + i * 2] = new TextData(stackTrace[i].toString());
+//        text[4 + i * 2].text += "\n";
+//        text[4 + i * 2].color = "dark_red";
+//        text[5 + i * 2] = TextData.LINEBREAK;
+//      }
+//    }
 
     list.add(new TextElement(0, TITLE_HEIGHT, BookScreen.PAGE_WIDTH, BookScreen.PAGE_HEIGHT - TITLE_HEIGHT, text));
   }

@@ -33,7 +33,7 @@ public class BlockDeferredRegister extends DeferredRegisterWrapper {
    * @return  Block registry object
    */
   public <B extends Block> Block registerNoItem(String name, Supplier<? extends B> block) {
-    return Registry.register(Registry.BLOCK, name, block.get());
+    return Registry.register(Registry.BLOCK, new Identifier(modID, name), block.get());
   }
 
   /**
