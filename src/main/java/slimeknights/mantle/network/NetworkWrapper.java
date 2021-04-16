@@ -44,9 +44,8 @@ public class NetworkWrapper {
   /**
    * Creates a new network wrapper
    */
-  public NetworkWrapper() {
-    this.identifier = new Identifier("mantle:networking");
-
+  public NetworkWrapper(Identifier identifer) {
+    this.identifier = identifer;
     ServerPlayNetworking.registerGlobalReceiver(identifier, (minecraftServer, serverPlayerEntity, serverPlayNetworkHandler, packetByteBuf, packetSender) -> {
       int id = packetByteBuf.readInt();
 
