@@ -1,5 +1,9 @@
 package slimeknights.mantle.network;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+
+import io.netty.buffer.ByteBufUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
@@ -17,13 +21,11 @@ import net.minecraft.util.math.BlockPos;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.jetbrains.annotations.Nullable;
 import slimeknights.mantle.Mantle;
-import slimeknights.mantle.network.packet.ISimplePacket;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * A small network implementation/wrapper using AbstractPackets instead of IMessages.
@@ -32,14 +34,41 @@ import java.util.function.Supplier;
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class NetworkWrapper {
   private static final String PROTOCOL_VERSION = "1";
+  private final Identifier identifier;
 
-  private final List<BiConsumer<Object, PacketByteBuf>> encoders = new ArrayList<>();
+  Map<Integer, Packet> packetIdMap = new HashMap<>();
+  Map<Class<?>, Packet> packetClassMap = new HashMap<>();
+
+  private int id = 0;
 
   /**
    * Creates a new network wrapper
    */
   public NetworkWrapper() {
+    this.identifier = new Identifier("mantle:networking");
+
+    ServerPlayNetworking.registerGlobalReceiver(identifier, (minecraftServer, serverPlayerEntity, serverPlayNetworkHandler, packetByteBuf, packetSender) -> {
+      int id = packetByteBuf.readInt();
+
+      Packet packet = packetIdMap.get(id);
+
+      Object object = packet.decoder.apply(packetByteBuf);
+
+      packet.consumer.accept(object, serverPlayerEntity, packetSender);
+    });
+
+    ClientPlayNetworking.registerGlobalReceiver(identifier, (minecraftClient, clientPlayNetworkHandler, packetByteBuf, packetSender) -> {
+      int id = packetByteBuf.readInt();
+
+      Packet packet = packetIdMap.get(id);
+
+      Object object = packet.decoder.apply(packetByteBuf);
+
+      packet.consumer.accept(object, minecraftClient.player, packetSender);
+    });
   }
+
+
 
   /**
    * Registers a new generic packet
@@ -48,27 +77,13 @@ public class NetworkWrapper {
    * @param decoder    Packet decoder, typically the constructor
    * @param direction  Network direction for validation. Pass null for no direction
    */
-  public void registerPacket(Class<Object> clazz, BiConsumer<Object, PacketByteBuf> encoder, Function<PacketByteBuf, Object> decoder, TriConsumer<Object, PlayerEntity, PacketSender> consumer, @Nullable NetworkSide direction) {
-    //Workaround for the current system
-    Identifier channelName = Mantle.getResource(clazz.getSimpleName().toLowerCase());
+  public <T> void registerPacket(Class<T> clazz, BiConsumer<T, PacketByteBuf> encoder, Function<PacketByteBuf, T> decoder, TriConsumer<T, PlayerEntity, PacketSender> consumer, NetworkSide direction) {
+    Packet packet = Packet.of(id, (Class<Object>) clazz, (BiConsumer<Object, PacketByteBuf>) encoder, (Function<PacketByteBuf, Object>) decoder, (TriConsumer<Object, PlayerEntity, PacketSender>) consumer, direction);
 
-    encoders.add(encoder);
+    packetIdMap.put(id, packet);
+    packetClassMap.put(clazz, packet);
+    id++;
 
-    if(direction == NetworkSide.SERVERBOUND) {
-      ServerPlayNetworking.registerGlobalReceiver(channelName,
-              (minecraftServer,
-               serverPlayerEntity,
-               serverPlayNetworkHandler,
-               packetByteBuf,
-               packetSender) -> consumer.accept(decoder.apply(packetByteBuf), serverPlayerEntity, packetSender));
-    }
-    if(direction == NetworkSide.CLIENTBOUND) {
-      ClientPlayNetworking.registerGlobalReceiver(channelName,
-              (minecraftClient,
-               clientPlayNetworkHandler,
-               packetByteBuf,
-               packetSender) -> consumer.accept(decoder.apply(packetByteBuf), minecraftClient.player, packetSender));
-    }
   }
 
 
@@ -79,12 +94,19 @@ public class NetworkWrapper {
    * @param msg  Packet to send
    */
   public void sendToServer(Object msg) {
+    Class<?> clazz = msg.getClass();
+
+    Packet packet = packetClassMap.get(clazz);
+
+    if(packet == null || packet.direction == NetworkSide.CLIENTBOUND) return;
+
     PacketByteBuf packetByteBuf = PacketByteBufs.create();
-    Identifier channelName = Mantle.getResource(msg.getClass().getSimpleName().toLowerCase());
-    for (BiConsumer<Object, PacketByteBuf> encoder : encoders) {
-      encoder.accept(msg, packetByteBuf);
-    }
-    ClientPlayNetworking.send(channelName, packetByteBuf);
+
+    packetByteBuf.writeInt(id);
+
+    packet.encoder.accept(msg, packetByteBuf);
+
+    ClientPlayNetworking.send(identifier, packetByteBuf);
   }
 
   /**
@@ -93,13 +115,21 @@ public class NetworkWrapper {
    * @param msg  Packet to send
    */
   public void send(ServerPlayerEntity target, Object msg) {
-    PacketByteBuf packetByteBuf = PacketByteBufs.create();
-    Identifier channelName = Mantle.getResource(msg.getClass().getSimpleName().toLowerCase());
-    for (BiConsumer<Object, PacketByteBuf> encoder : encoders) {
-      encoder.accept(msg, packetByteBuf);
-    }
+    Class<?> clazz = msg.getClass();
 
-    ServerPlayNetworking.send(target, channelName, packetByteBuf);
+    Packet packet = packetClassMap.get(clazz);
+
+    if(packet == null || packet.direction == NetworkSide.SERVERBOUND) return;
+
+    PacketByteBuf packetByteBuf = PacketByteBufs.create();
+
+    packetByteBuf.writeInt(id);
+
+    packet.encoder.accept(msg, packetByteBuf);
+
+    ClientPlayNetworking.send(identifier, packetByteBuf);
+
+    ServerPlayNetworking.send(target, identifier, packetByteBuf);
   }
 
   /**
@@ -107,7 +137,7 @@ public class NetworkWrapper {
    * @param player  Player receiving the packet
    * @param packet  Packet
    */
-  public void sendVanillaPacket(Packet<?> packet, Entity player) {
+  public void sendVanillaPacket(net.minecraft.network.Packet<?> packet, Entity player) {
     if (player instanceof ServerPlayerEntity && ((ServerPlayerEntity) player).networkHandler != null) {
       ((ServerPlayerEntity) player).networkHandler.sendPacket(packet);
     }
@@ -131,6 +161,26 @@ public class NetworkWrapper {
   public void sendToClientsAround(Object msg, ServerWorld serverWorld, BlockPos position) {
     for (ServerPlayerEntity playerEntity : PlayerLookup.around(serverWorld, position, 16)) {
       send(playerEntity, msg);
+    }
+  }
+
+  static class Packet {
+    NetworkSide direction;
+    BiConsumer<Object, PacketByteBuf> encoder;
+    Function<PacketByteBuf, Object> decoder;
+    TriConsumer<Object, PlayerEntity, PacketSender> consumer;
+    Class<?> clazz;
+    int id;
+
+    public static Packet of(int id, Class<Object> clazz, BiConsumer<Object, PacketByteBuf> encoder, Function<PacketByteBuf, Object> decoder, TriConsumer<Object, PlayerEntity, PacketSender> consumer, NetworkSide side) {
+      Packet packet = new Packet();
+      packet.clazz = clazz;
+      packet.encoder = encoder;
+      packet.decoder = decoder;
+      packet.consumer = consumer;
+      packet.direction = side;
+      packet.id = id;
+      return packet;
     }
   }
 }
