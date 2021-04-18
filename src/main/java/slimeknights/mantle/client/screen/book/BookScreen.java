@@ -71,6 +71,9 @@ public class BookScreen extends Screen {
 
   public AdvancementCache advancementCache;
 
+  private double[] lastClick;
+  private double[] lastDrag;
+
   //TODO: new name as vanilla now uses init
   public static void initWidthsAndHeights() {
     PAGE_WIDTH = (int) ((PAGE_WIDTH_UNSCALED - (PAGE_PADDING_LEFT + PAGE_PADDING_RIGHT + PAGE_MARGIN + PAGE_MARGIN)) / PAGE_SCALE);
@@ -90,7 +93,7 @@ public class BookScreen extends Screen {
     this.advancementCache = new AdvancementCache();
     this.client.player.networkHandler.getAdvancementHandler().setListener(this.advancementCache);
 
-    this.openPage(book.findPageNumber(BookHelper.getSavedPage(item), this.advancementCache));
+    this.openPage(book.findPageNumber(BookHelper.getCurrentSavedPage(item), this.advancementCache));
   }
 
   @Override
@@ -146,8 +149,7 @@ public class BookScreen extends Screen {
         fontRenderer.drawWithShadow(matrixStack, this.book.appearance.subtitle, (this.width / 2) / 1.5F + 7 - fontRenderer.getWidth(this.book.appearance.subtitle) / 2, (this.height / 2 + 100 - fontRenderer.fontHeight * 2) / 1.5F, 0xAE8000);
         RenderSystem.popMatrix();
       }
-    }
-    else {
+    } else {
       render.bindTexture(TEX_BOOK);
       DiffuseLighting.disable();
 
@@ -307,8 +309,7 @@ public class BookScreen extends Screen {
     if (this.page == -1) {
       this.nextArrow.x = this.width / 2 + 80;
       this.indexArrow.visible = false;
-    }
-    else {
+    } else {
       this.previousArrow.x = this.width / 2 - 184;
       this.nextArrow.x = this.width / 2 + 165;
 
@@ -318,16 +319,6 @@ public class BookScreen extends Screen {
     this.previousArrow.y = this.height / 2 + 75;
     this.nextArrow.y = this.height / 2 + 75;
   }
-
-  /*@Override
-  TODO: REMOVE
-  public void actionPerformed(GuiButton button) {
-    if(button instanceof GuiBookmark) {
-      openPage(book.findPageNumber(((GuiBookmark) button).data.page, advancementCache));
-
-      return;
-    }
-  }*/
 
   @Override
   public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
@@ -374,8 +365,7 @@ public class BookScreen extends Screen {
       this.buildPages();
 
       return true;
-    }
-    else if (scrollDelta > 0.0D) {
+    } else if (scrollDelta > 0.0D) {
       this.page--;
       if (this.page < -1) {
         this.page = -1;
@@ -401,6 +391,8 @@ public class BookScreen extends Screen {
       mouseX = this.getMouseX(true);
       right = true;
     }
+
+    lastClick = new double[]{mouseX, mouseY};
 
     // Not foreach to prevent conmodification crashes
     int oldPage = this.page;
@@ -432,11 +424,15 @@ public class BookScreen extends Screen {
       BookElement element = right ? this.rightElements.get(i) : this.leftElements.get(i);
       element.mouseReleased(mouseX, mouseY, mouseButton);
     }
+
+    lastClick = null;
+    lastDrag = null;
+
     return super.mouseReleased(originalMouseX, originalMouseY, mouseButton);
   }
 
   @Override
-  public boolean mouseDragged(double mouseX, double mouseY, int clickedMouseButton, double timeSinceLaslick, double unknown) {
+  public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
     boolean right = false;
     mouseX = this.getMouseX(false);
     mouseY = this.getMouseY();
@@ -446,11 +442,19 @@ public class BookScreen extends Screen {
       right = true;
     }
 
-    // Not foreach to prevent conmodification crashes
-    for (int i = 0; right ? i < this.rightElements.size() : i < this.leftElements.size(); i++) {
-      BookElement element = right ? this.rightElements.get(i) : this.leftElements.get(i);
-      element.mouseClickMove(mouseX, mouseY, clickedMouseButton);
+    if (lastClick != null) {
+      if (lastDrag == null)
+        lastDrag = new double[]{mouseX, mouseY};
+
+      // Not foreach to prevent conmodification crashes
+      for (int i = 0; right ? i < this.rightElements.size() : i < this.leftElements.size(); i++) {
+        BookElement element = right ? this.rightElements.get(i) : this.leftElements.get(i);
+        element.mouseDragged(lastClick[0], lastClick[1], mouseX, mouseY, lastDrag[0], lastDrag[1], button);
+      }
+
+      lastDrag = new double[]{mouseX, mouseY};
     }
+
 
     return true;
   }
@@ -469,8 +473,7 @@ public class BookScreen extends Screen {
 
     if (this.page == -1) {
       BookLoader.updateSavedPage(this.client.player, this.item, "");
-    }
-    else if (page != null && page.parent != null) {
+    } else if (page != null && page.parent != null) {
       BookLoader.updateSavedPage(this.client.player, this.item, page.parent.name + "." + page.name);
     }
   }
@@ -483,8 +486,7 @@ public class BookScreen extends Screen {
   public void drawerTransform(boolean rightSide) {
     if (rightSide) {
       RenderSystem.translatef(this.width / 2 + PAGE_PADDING_RIGHT + PAGE_MARGIN, this.height / 2 - PAGE_HEIGHT_UNSCALED / 2 + PAGE_PADDING_TOP + PAGE_MARGIN, 0);
-    }
-    else {
+    } else {
       RenderSystem.translatef(this.width / 2 - PAGE_WIDTH_UNSCALED + PAGE_PADDING_LEFT + PAGE_MARGIN, this.height / 2 - PAGE_HEIGHT_UNSCALED / 2 + PAGE_PADDING_TOP + PAGE_MARGIN, 0);
     }
   }
@@ -494,8 +496,7 @@ public class BookScreen extends Screen {
     if (rightSide) {
       // from center: go padding + margin to the right
       return this.width / 2 + PAGE_PADDING_RIGHT + PAGE_MARGIN;
-    }
-    else {
+    } else {
       // from center: go page width left, then right with padding and margin
       return this.width / 2 - PAGE_WIDTH_UNSCALED + PAGE_PADDING_LEFT + PAGE_MARGIN;
     }
@@ -525,11 +526,9 @@ public class BookScreen extends Screen {
     int bookPage;
     if (page == 1) {
       bookPage = 0;
-    }
-    else if (page % 2 == 0) {
+    } else if (page % 2 == 0) {
       bookPage = (page - 1) / 2 + 1;
-    }
-    else {
+    } else {
       bookPage = (page - 2) / 2 + 1;
     }
 
@@ -552,17 +551,13 @@ public class BookScreen extends Screen {
   public int getPage(int side) {
     if (this.page == 0 && side == 0) {
       return -1;
-    }
-    else if (this.page == 0 && side == 1) {
+    } else if (this.page == 0 && side == 1) {
       return 0;
-    }
-    else if (side == 0) {
+    } else if (side == 0) {
       return (this.page - 1) * 2 + 1;
-    }
-    else if (side == 1) {
+    } else if (side == 1) {
       return (this.page - 2) * 2 + 2;
-    }
-    else {
+    } else {
       return -1;
     }
   }
@@ -601,8 +596,7 @@ public class BookScreen extends Screen {
       if (page != null) {
         page.content.build(this.book, this.rightElements, false);
       }
-    }
-    else {
+    } else {
       PageData leftPage = this.book.findPage((this.page - 1) * 2 + 1, this.advancementCache);
       PageData rightPage = this.book.findPage((this.page - 1) * 2 + 2, this.advancementCache);
 
@@ -622,10 +616,10 @@ public class BookScreen extends Screen {
     }
   }
 
-  public class AdvancementCache implements ClientAdvancementManager.Listener {
+  public static class AdvancementCache implements ClientAdvancementManager.Listener {
 
-    private HashMap<Advancement, AdvancementProgress> progress = new HashMap<>();
-    private HashMap<Identifier, Advancement> nameCache = new HashMap<>();
+    private final HashMap<Advancement, AdvancementProgress> progress = new HashMap<>();
+    private final HashMap<Identifier, Advancement> nameCache = new HashMap<>();
 
     @Nullable
     public AdvancementProgress getProgress(String id) {

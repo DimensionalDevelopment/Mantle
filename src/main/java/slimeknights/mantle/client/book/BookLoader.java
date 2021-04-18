@@ -42,14 +42,19 @@ import java.util.function.Predicate;
 @Environment(EnvType.CLIENT)
 public class BookLoader implements ResourceReloadListener {
 
-  /** GSON object to be used for book loading purposes */
-  public static final Gson GSON = new GsonBuilder().registerTypeAdapter(int.class, new HexStringDeserializer())
-          .create();
+  /**
+   * GSON object to be used for book loading purposes
+   */
+  public static final Gson GSON = new GsonBuilder().registerTypeAdapter(int.class, new HexStringDeserializer()).create();
 
-  /** Maps page content presets to names */
+  /**
+   * Maps page content presets to names
+   */
   private static final HashMap<String, Class<? extends PageContent>> typeToContentMap = new HashMap<>();
 
-  /** Internal registry of all books for the purposes of the reloader, maps books to name */
+  /**
+   * Internal registry of all books for the purposes of the reloader, maps books to name
+   */
   private static final HashMap<String, BookData> books = new HashMap<>();
 
   public BookLoader() {
@@ -65,7 +70,7 @@ public class BookLoader implements ResourceReloadListener {
     registerPageType("smelting", ContentSmelting.class);
     registerPageType("smithing", ContentSmithing.class);
     registerPageType("block interaction", ContentBlockInteraction.class);
-    registerPageType("structure", ContentStructure.class);
+    registerPageType(ContentStructure.ID, ContentStructure.class);
 
     // Register action protocols
     StringActionProcessor.registerProtocol(new ProtocolGoToPage());
@@ -143,7 +148,7 @@ public class BookLoader implements ResourceReloadListener {
       return;
     }
 
-    BookHelper.writeSavedPage(item, page);
+    BookHelper.writeSavedPageToBook(item, page);
     MantleNetwork.INSTANCE.sendToServer(new UpdateSavedPagePacket(page));
   }
 

@@ -11,6 +11,7 @@ import net.minecraft.client.texture.TextureManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
+import net.minecraftforge.fml.client.gui.GuiUtils;
 import slimeknights.mantle.client.render.RenderingHelper;
 import slimeknights.mantle.client.screen.book.BookScreen;
 
@@ -40,6 +41,14 @@ public abstract class BookElement extends DrawableHelper {
 
   }
 
+  /**
+   *
+   * @param mouseX mouse x position
+   * @param mouseY mouse y position
+   * @param clickedMouseButton the clicked button
+   * @deprecated Goes unused and should be removed in 1.17 or book reworking
+   */
+  @Deprecated
   public void mouseClickMove(double mouseX, double mouseY, int clickedMouseButton) {
 
   }
@@ -48,7 +57,7 @@ public abstract class BookElement extends DrawableHelper {
 
   }
 
-  public void mouseDragged(int clickX, int clickY, int mx, int my, int lastX, int lastY, int button) {
+  public void mouseDragged(double clickX, double clickY, double mx, double my, double lastX, double lastY, int button) {
 
   }
 
@@ -60,7 +69,7 @@ public abstract class BookElement extends DrawableHelper {
   }
 
   public void drawHoveringText(MatrixStack matrixStack, List<Text> textLines, int x, int y, TextRenderer font) {
-    RenderingHelper.drawHoveringText(matrixStack, textLines, x, y, this.parent.width, this.parent.height, -1, font);
+    GuiUtils.drawHoveringText(matrixStack, textLines, x, y, this.parent.width, this.parent.height, -1, font);
     DiffuseLighting.disable();
   }
 }

@@ -64,8 +64,7 @@ public class ContentCrafting extends PageContent {
       list.add(new ImageElement(x, y, IMG_CRAFTING_SMALL.width, IMG_CRAFTING_SMALL.height, IMG_CRAFTING_SMALL, book.appearance.slotColor));
       resultX = x + X_RESULT_SMALL;
       resultY = y + Y_RESULT_SMALL;
-    }
-    else if (this.grid_size.equalsIgnoreCase("large")) {
+    } else if (this.grid_size.equalsIgnoreCase("large")) {
       x = BookScreen.PAGE_WIDTH / 2 - IMG_CRAFTING_LARGE.width / 2;
       height = y + IMG_CRAFTING_LARGE.height;
       list.add(new ImageElement(x, y, IMG_CRAFTING_LARGE.width, IMG_CRAFTING_LARGE.height, IMG_CRAFTING_LARGE, book.appearance.slotColor));
@@ -97,9 +96,9 @@ public class ContentCrafting extends PageContent {
   public void load() {
     super.load();
 
-    if(!StringUtils.isEmpty(recipe) && Identifier.isValid(recipe)) {
+    if (!StringUtils.isEmpty(recipe) && Identifier.isValid(recipe)) {
       int w = 0, h = 0;
-      switch(grid_size.toLowerCase()) {
+      switch (grid_size.toLowerCase()) {
         case "large":
           w = h = 3;
           break;
@@ -109,8 +108,8 @@ public class ContentCrafting extends PageContent {
       }
 
       Recipe<?> recipe = MinecraftClient.getInstance().world.getRecipeManager().get(new Identifier(this.recipe)).orElse(null);
-      if(recipe instanceof CraftingRecipe) {
-        if(!recipe.fits(w, h)) {
+      if (recipe instanceof CraftingRecipe) {
+        if (!recipe.fits(w, h)) {
           throw new BookLoadException("Recipe " + this.recipe + " cannot fit in a " + w + "x" + h + " crafting grid");
         }
 
@@ -118,13 +117,13 @@ public class ContentCrafting extends PageContent {
 
         DefaultedList<Ingredient> ingredients = recipe.getPreviewInputs();
 
-        if(recipe instanceof ShapedRecipe) {
+        if (recipe instanceof ShapedRecipe) {
           ShapedRecipe shaped = (ShapedRecipe) recipe;
 
           grid = new ItemStackData[shaped.getHeight()][shaped.getWidth()];
 
-          for(int y = 0; y < grid.length; y++) {
-            for(int x = 0; x < grid[y].length; x++){
+          for (int y = 0; y < grid.length; y++) {
+            for (int x = 0; x < grid[y].length; x++) {
               grid[y][x] = ItemStackData.getItemStackData(DefaultedList.copyOf(ItemStack.EMPTY, ingredients.get(x + y * grid[y].length).getMatchingStacksClient()));
             }
           }
@@ -133,7 +132,7 @@ public class ContentCrafting extends PageContent {
         }
 
         grid = new ItemStackData[h][w];
-        for(int i = 0; i < ingredients.size(); i++){
+        for (int i = 0; i < ingredients.size(); i++) {
           grid[i / h][i % w] = ItemStackData.getItemStackData(DefaultedList.copyOf(ItemStack.EMPTY, ingredients.get(i).getMatchingStacksClient()));
         }
       }

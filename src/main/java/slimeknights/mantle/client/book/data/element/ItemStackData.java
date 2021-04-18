@@ -38,7 +38,7 @@ public class ItemStackData implements IDataElement {
   private transient int tagGeneration;
 
   public DefaultedList<ItemStack> getItems() {
-    if(this.isTag && this.tagGeneration != 0) { //ItemTags.getGeneration()) {  TODO FIX
+    if (this.isTag && this.tagGeneration != 0) { //ItemTags.getGeneration()) {  TODO FIX
       this.loadTag();
     }
 
@@ -54,8 +54,7 @@ public class ItemStackData implements IDataElement {
     boolean isMissingItem = false;
     try {
       item = Registry.ITEM.get(new Identifier(this.id));
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       item = Items.BARRIER;
       isMissingItem = true;
     }
@@ -70,8 +69,7 @@ public class ItemStackData implements IDataElement {
     if (this.nbt != null) {
       try {
         itemStack.setTag(StringNbtReader.parse(filterJsonQuotes(this.nbt.toString())));
-      }
-      catch (CommandSyntaxException ignored) {
+      } catch (CommandSyntaxException ignored) {
       }
     }
 
@@ -123,8 +121,7 @@ public class ItemStackData implements IDataElement {
     Tag<Item> values = ItemTags.getTagGroup().getTag(new Identifier(this.tag));
     if (values != null) {
       this.items = values.values().stream().map(ItemStack::new).collect(Collectors.toCollection(DefaultedList::of));
-    }
-    else {
+    } else {
       this.items = DefaultedList.of();
     }
   }
@@ -149,7 +146,7 @@ public class ItemStackData implements IDataElement {
       if (source.resourceExists(location)) {
         try {
           ItemsList itemsList = BookLoader.GSON
-                  .fromJson(source.resourceToString(source.getResource(location)), ItemsList.class);
+            .fromJson(source.resourceToString(source.getResource(location)), ItemsList.class);
           this.items = DefaultedList.ofSize(itemsList.items.length, ItemStack.EMPTY);
 
           for (int i = 0; i < itemsList.items.length; i++) {
@@ -157,8 +154,7 @@ public class ItemStackData implements IDataElement {
           }
 
           this.action = itemsList.action;
-        }
-        catch (Exception ignored) {
+        } catch (Exception ignored) {
         }
       }
     }

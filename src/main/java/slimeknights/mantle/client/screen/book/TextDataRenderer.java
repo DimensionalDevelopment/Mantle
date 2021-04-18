@@ -13,6 +13,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraftforge.fml.client.gui.GuiUtils;
 import org.apache.commons.lang3.StringUtils;
 import slimeknights.mantle.Mantle;
 import slimeknights.mantle.client.book.data.element.TextData;
@@ -41,7 +42,6 @@ public class TextDataRenderer {
     return action;
   }
 
-  @Nullable
   public static String drawText(MatrixStack matrixStack, int x, int y, int boxWidth, int boxHeight, TextData[] data, int mouseX, int mouseY, TextRenderer fr, List<Text> tooltip) {
     String action = "";
 
@@ -73,7 +73,9 @@ public class TextDataRenderer {
 
       String modifiers = "";
 
-      modifiers += Formatting.byName(item.color);
+      if (item.useOldColor) {
+        modifiers += Formatting.byName(item.color);
+      }
 
       if (item.bold) {
         modifiers += Formatting.BOLD;
@@ -107,7 +109,7 @@ public class TextDataRenderer {
         }
 
         String s = split[i];
-        drawScaledString(matrixStack, fr, modifiers + s, atX, atY, 0, item.dropshadow, item.scale);
+        drawScaledString(matrixStack, fr, modifiers + s, atX, atY, item.rgbColor, item.dropshadow, item.scale);
 
         if (i < split.length - 1) {
           atY += fr.fontHeight;
@@ -119,8 +121,7 @@ public class TextDataRenderer {
 
           if (atX == x) {
             box1W = x + boxWidth;
-          }
-          else {
+          } else {
             box1W = atX;
           }
         }
@@ -158,8 +159,7 @@ public class TextDataRenderer {
       if (atY >= y + boxHeight) {
         if (item.dropshadow) {
           fr.drawWithShadow(matrixStack, "...", atX, atY, 0);
-        }
-        else {
+        } else {
           fr.draw(matrixStack, "...", atX, atY, 0);
         }
         break;
@@ -203,7 +203,7 @@ public class TextDataRenderer {
 
       if (s.charAt(i) == '\n' || (curHeight == (int) (fr.fontHeight * scale) && curWidth > firstWidth) || (curHeight != (int) (fr.fontHeight * scale) && curWidth > width)) {
         int oldI = i;
-        if(s.charAt(i) != '\n') {
+        if (s.charAt(i) != '\n') {
           while (i >= 0 && s.charAt(i) != ' ') {
             i--;
           }
@@ -231,7 +231,7 @@ public class TextDataRenderer {
 
   //BEGIN METHODS FROM GUI
   public static void drawTooltip(MatrixStack matrixStack, List<Text> textLines, int mouseX, int mouseY, TextRenderer font) {
-    RenderingHelper.drawHoveringText(matrixStack, textLines, mouseX, mouseY, BookScreen.PAGE_WIDTH, BookScreen.PAGE_HEIGHT, BookScreen.PAGE_WIDTH, font);
+    GuiUtils.drawHoveringText(matrixStack, textLines, mouseX, mouseY, BookScreen.PAGE_WIDTH, BookScreen.PAGE_HEIGHT, BookScreen.PAGE_WIDTH, font);
     DiffuseLighting.disable();
   }
 
@@ -241,8 +241,7 @@ public class TextDataRenderer {
     RenderSystem.scalef(scale, scale, 1F);
     if (dropShadow) {
       font.drawWithShadow(matrixStack, text, 0, 0, color);
-    }
-    else {
+    } else {
       font.draw(matrixStack, text, 0, 0, color);
     }
     RenderSystem.popMatrix();

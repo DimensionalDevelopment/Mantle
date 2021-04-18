@@ -50,7 +50,8 @@ public class TagPreference<T> {
    * @param entry  Registry entry to check
    * @return  Sort index for that entry
    */
-  private int getSortIndex(T entry) {
+  private static int getSortIndex(IForgeRegistryEntry<?> entry) {
+    List<? extends String> entries = Config.TAG_PREFERENCES.get();
     // check the index of the namespace in the preference list
     int index = Mantle.config.tagPreferences.indexOf(Objects.requireNonNull(registry.getId(entry)).getNamespace());
     // if missing, declare last

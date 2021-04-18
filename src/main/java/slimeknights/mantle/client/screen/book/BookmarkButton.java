@@ -11,6 +11,7 @@ import net.minecraft.util.Identifier;
 import slimeknights.mantle.client.book.data.BookmarkData;
 
 @Environment(EnvType.CLIENT)
+@Deprecated // Unused and to be removed in upcoming book rework.
 public class BookmarkButton extends ButtonWidget {
 
   private static final Identifier TEX_BOOK = new Identifier("mantle:textures/gui/book.png");

@@ -41,5 +41,5 @@ public abstract class BookRepository {
     return this.resourceToString(resource, true);
   }
 
-  public abstract String resourceToString(@Nullable Resource resource, boolean skipCommments);
+  public abstract String resourceToString(@Nullable Resource resource, boolean skipComments);
 }
