@@ -33,7 +33,7 @@ public class NetworkWrapper {
   Map<Integer, Packet> packetIdMap = new HashMap<>();
   Map<Class<?>, Packet> packetClassMap = new HashMap<>();
 
-  private int id = 0;
+  private int id;
 
   /**
    * Creates a new network wrapper
@@ -42,9 +42,7 @@ public class NetworkWrapper {
     this.identifier = identifer;
     ServerPlayNetworking.registerGlobalReceiver(identifier, (minecraftServer, serverPlayerEntity, serverPlayNetworkHandler, packetByteBuf, packetSender) -> {
       int id = packetByteBuf.readInt();
-
       Packet packet = packetIdMap.get(id);
-
       ISimplePacket object = packet.decoder.apply(packetByteBuf);
 
       packet.consumer.accept(object, serverPlayerEntity, packetSender);
@@ -52,9 +50,7 @@ public class NetworkWrapper {
 
     ClientPlayNetworking.registerGlobalReceiver(identifier, (minecraftClient, clientPlayNetworkHandler, packetByteBuf, packetSender) -> {
       int id = packetByteBuf.readInt();
-
       Packet packet = packetIdMap.get(id);
-
       ISimplePacket object = packet.decoder.apply(packetByteBuf);
 
       packet.consumer.accept(object, minecraftClient.player, packetSender);
@@ -78,7 +74,6 @@ public class NetworkWrapper {
     packetIdMap.put(id, packet);
     packetClassMap.put(clazz, packet);
     id++;
-
   }
 
 
@@ -90,17 +85,13 @@ public class NetworkWrapper {
    */
   public void sendToServer(ISimplePacket msg) {
     Class<?> clazz = msg.getClass();
-
     Packet packet = packetClassMap.get(clazz);
 
     if(packet == null || packet.direction == NetworkSide.CLIENTBOUND) return;
 
     PacketByteBuf packetByteBuf = PacketByteBufs.create();
-
-    packetByteBuf.writeInt(id);
-
+    packetByteBuf.writeInt(packet.id);
     packet.encoder.accept(msg, packetByteBuf);
-
     ClientPlayNetworking.send(identifier, packetByteBuf);
   }
 
@@ -111,19 +102,14 @@ public class NetworkWrapper {
    */
   public void send(ServerPlayerEntity target, ISimplePacket msg) {
     Class<?> clazz = msg.getClass();
-
     Packet packet = packetClassMap.get(clazz);
 
     if(packet == null || packet.direction == NetworkSide.SERVERBOUND) return;
 
     PacketByteBuf packetByteBuf = PacketByteBufs.create();
-
-    packetByteBuf.writeInt(id);
+    packetByteBuf.writeInt(packet.id);
 
     packet.encoder.accept(msg, packetByteBuf);
-
-    ClientPlayNetworking.send(identifier, packetByteBuf);
-
     ServerPlayNetworking.send(target, identifier, packetByteBuf);
   }
 
