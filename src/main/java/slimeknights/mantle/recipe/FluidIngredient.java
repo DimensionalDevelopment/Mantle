@@ -1,9 +1,6 @@
 package slimeknights.mantle.recipe;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,6 +23,8 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import net.minecraft.util.registry.Registry;
 import slimeknights.mantle.util.JsonHelper;
+
+import static alexiil.mc.lib.attributes.fluid.amount.FluidAmount.tryParse;
 
 // TODO: move to ingredient package in 1.17
 @SuppressWarnings("unused")
@@ -317,8 +316,28 @@ public abstract class FluidIngredient {
       if (fluid == null || fluid.isEmpty()) {
         throw new JsonSyntaxException("Unknown fluid '" + fluid.name + "'");
       }
-      FluidAmount amount = FluidAmount.fromJson(json.get("amount"));
+      FluidAmount amount = fromJson(json.get("amount"));
       return new FluidMatch(fluid, amount);
+    }
+  }
+
+  public static FluidAmount fromJson(JsonElement json) throws JsonSyntaxException {
+    if (json.isJsonPrimitive()) {
+      JsonPrimitive primitive = json.getAsJsonPrimitive();
+      if (primitive.isString()) {
+        Object result = tryParse(primitive.getAsString());
+        if (result instanceof FluidAmount) {
+          return (FluidAmount)result;
+        } else {
+          throw new JsonSyntaxException((String)result);
+        }
+      } else if (primitive.isNumber()) {
+        return FluidAmount.of(primitive.getAsLong(), 1000);
+      } else {
+        throw new JsonSyntaxException("Cannot convert " + primitive + " to a FluidAmount!");
+      }
+    } else {
+      throw new JsonSyntaxException("Expected either a string or an integer, but got " + json + "!");
     }
   }
 

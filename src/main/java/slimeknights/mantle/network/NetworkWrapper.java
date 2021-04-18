@@ -1,9 +1,5 @@
 package slimeknights.mantle.network;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
-
-import io.netty.buffer.ByteBufUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
@@ -12,15 +8,13 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.NetworkSide;
-import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import org.apache.logging.log4j.util.TriConsumer;
-import org.jetbrains.annotations.Nullable;
-import slimeknights.mantle.Mantle;
+import slimeknights.mantle.network.packet.ISimplePacket;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,7 +45,7 @@ public class NetworkWrapper {
 
       Packet packet = packetIdMap.get(id);
 
-      Object object = packet.decoder.apply(packetByteBuf);
+      ISimplePacket object = packet.decoder.apply(packetByteBuf);
 
       packet.consumer.accept(object, serverPlayerEntity, packetSender);
     });
@@ -61,23 +55,25 @@ public class NetworkWrapper {
 
       Packet packet = packetIdMap.get(id);
 
-      Object object = packet.decoder.apply(packetByteBuf);
+      ISimplePacket object = packet.decoder.apply(packetByteBuf);
 
       packet.consumer.accept(object, minecraftClient.player, packetSender);
     });
   }
 
+  public  <T extends ISimplePacket> void registerPacket(Class<T> clazz, Function<PacketByteBuf, T> decoder, NetworkSide side) {
+    registerPacket(clazz, ISimplePacket::encode, decoder, ISimplePacket::handle, side);
+  }
 
-
-  /**
-   * Registers a new generic packet
-   * @param clazz      Packet class
-   * @param encoder    Encodes a packet to the buffer
-   * @param decoder    Packet decoder, typically the constructor
-   * @param direction  Network direction for validation. Pass null for no direction
-   */
-  public <T> void registerPacket(Class<T> clazz, BiConsumer<T, PacketByteBuf> encoder, Function<PacketByteBuf, T> decoder, TriConsumer<T, PlayerEntity, PacketSender> consumer, NetworkSide direction) {
-    Packet packet = Packet.of(id, (Class<Object>) clazz, (BiConsumer<Object, PacketByteBuf>) encoder, (Function<PacketByteBuf, Object>) decoder, (TriConsumer<Object, PlayerEntity, PacketSender>) consumer, direction);
+    /**
+     * Registers a new generic packet
+     * @param clazz      Packet class
+     * @param encoder    Encodes a packet to the buffer
+     * @param decoder    Packet decoder, typically the constructor
+     * @param direction  Network direction for validation. Pass null for no direction
+     */
+  public <T extends ISimplePacket> void registerPacket(Class<T> clazz, BiConsumer<T, PacketByteBuf> encoder, Function<PacketByteBuf, T> decoder, TriConsumer<T, PlayerEntity, PacketSender> consumer, NetworkSide direction) {
+    Packet packet = Packet.of(id, clazz, encoder, decoder, consumer, direction);
 
     packetIdMap.put(id, packet);
     packetClassMap.put(clazz, packet);
@@ -92,7 +88,7 @@ public class NetworkWrapper {
    * Sends a packet to the server
    * @param msg  Packet to send
    */
-  public void sendToServer(Object msg) {
+  public void sendToServer(ISimplePacket msg) {
     Class<?> clazz = msg.getClass();
 
     Packet packet = packetClassMap.get(clazz);
@@ -113,7 +109,7 @@ public class NetworkWrapper {
    * @param target   Packet target
    * @param msg  Packet to send
    */
-  public void send(ServerPlayerEntity target, Object msg) {
+  public void send(ServerPlayerEntity target, ISimplePacket msg) {
     Class<?> clazz = msg.getClass();
 
     Packet packet = packetClassMap.get(clazz);
@@ -147,7 +143,7 @@ public class NetworkWrapper {
    * @param msg     Packet
    * @param player  Player to send
    */
-  public void sendTo(Object msg, ServerPlayerEntity player) {
+  public void sendTo(ISimplePacket msg, ServerPlayerEntity player) {
     send(player, msg);
   }
 
@@ -157,7 +153,7 @@ public class NetworkWrapper {
    * @param serverWorld  World instance
    * @param position     Position within range
    */
-  public void sendToClientsAround(Object msg, ServerWorld serverWorld, BlockPos position) {
+  public void sendToClientsAround(ISimplePacket msg, ServerWorld serverWorld, BlockPos position) {
     for (ServerPlayerEntity playerEntity : PlayerLookup.around(serverWorld, position, 16)) {
       send(playerEntity, msg);
     }
@@ -165,18 +161,18 @@ public class NetworkWrapper {
 
   static class Packet {
     NetworkSide direction;
-    BiConsumer<Object, PacketByteBuf> encoder;
-    Function<PacketByteBuf, Object> decoder;
-    TriConsumer<Object, PlayerEntity, PacketSender> consumer;
+    BiConsumer<ISimplePacket, PacketByteBuf> encoder;
+    Function<PacketByteBuf, ISimplePacket> decoder;
+    TriConsumer<ISimplePacket, PlayerEntity, PacketSender> consumer;
     Class<?> clazz;
     int id;
 
-    public static Packet of(int id, Class<Object> clazz, BiConsumer<Object, PacketByteBuf> encoder, Function<PacketByteBuf, Object> decoder, TriConsumer<Object, PlayerEntity, PacketSender> consumer, NetworkSide side) {
+    public static <T extends ISimplePacket> Packet of(int id, Class<T> clazz, BiConsumer<T, PacketByteBuf> encoder, Function<PacketByteBuf, T> decoder, TriConsumer<T, PlayerEntity, PacketSender> consumer, NetworkSide side) {
       Packet packet = new Packet();
       packet.clazz = clazz;
-      packet.encoder = encoder;
-      packet.decoder = decoder;
-      packet.consumer = consumer;
+      packet.encoder = (BiConsumer<ISimplePacket, PacketByteBuf>) encoder;
+      packet.decoder = (Function<PacketByteBuf, ISimplePacket>) decoder;
+      packet.consumer = (TriConsumer<ISimplePacket, PlayerEntity, PacketSender>) consumer;
       packet.direction = side;
       packet.id = id;
       return packet;

@@ -7,6 +7,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -46,11 +47,7 @@ public class FluidObject<F extends Fluid> implements Supplier<F>, ItemConvertibl
 
   /** Gets the ID for this fluid object */
   public Identifier getId() {
-    throw new RuntimeException("we need to make our own map of fluids to identifiers because vanilla registries make this hard");
-//    if (id == null) {
-//      id = Objects.requireNonNull(getStill(), "Fluid has null ID");
-//    }
-//    return id;
+    return Registry.FLUID.getId(getStill());
   }
 
   /**
