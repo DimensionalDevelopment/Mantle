@@ -31,3 +31,10 @@ accessible field net/minecraft/client/render/model/json/JsonUnbakedModel GSON Lc
 accessible  field   net/minecraft/world/dimension/DimensionType    OVERWORLD  Lnet/minecraft/world/dimension/DimensionType;
 
 accessible  field   net/minecraft/structure/Structure  blockInfoLists   Ljava/util/List;
+
+accessible  method  net/minecraft/client/render/model/json/JsonUnbakedModel$Deserializer  resolveReference  (Lnet/minecraft/util/Identifier;Ljava/lang/String;)Lcom/mojang/datafixers/util/Either;
+accessible  method  net/minecraft/client/render/model/json/JsonUnbakedModel    createQuad (Lnet/minecraft/client/render/model/json/ModelElement;Lnet/minecraft/client/render/model/json/ModelElementFace;Lnet/minecraft/client/texture/Sprite;Lnet/minecraft/util/math/Direction;Lnet/minecraft/client/render/model/ModelBakeSettings;Lnet/minecraft/util/Identifier;)Lnet/minecraft/client/render/model/BakedQuad;
+accessible  field   net/minecraft/client/render/model/json/JsonUnbakedModel    parentId   Lnet/minecraft/util/Identifier;
+accessible  field   net/minecraft/client/render/model/json/JsonUnbakedModel    parent Lnet/minecraft/client/render/model/json/JsonUnbakedModel;
+accessible  field   net/minecraft/client/render/model/json/JsonUnbakedModel    textureMap Ljava/util/Map;
+accessible  method   net/minecraft/client/render/model/json/ModelOverrideList   <init>    ()V

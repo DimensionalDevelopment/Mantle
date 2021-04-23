@@ -7,7 +7,7 @@ plugins {
 
 base.archivesBaseName = "mantle"
 group = "slimeknights"
-version = "1.6.39-SNAPSHOT"
+version = "1.7.0-SNAPSHOT"
 
 repositories {
     maven {
@@ -54,6 +54,13 @@ dependencies {
     modRuntime("curse.maven", "worldedit-225608", "3135186")
     modRuntime("curse.maven", "appleskin-248787", "2987255")
     modRuntime("curse.maven", "hwyla-253449", "3033613")
+
+    // Lombok is bad and worst in game but for now we just deal with it
+    compileOnly("org.projectlombok", "lombok", "1.18.20")
+    annotationProcessor("org.projectlombok", "lombok", "1.18.20")
+
+    testCompileOnly("org.projectlombok", "lombok", "1.18.20")
+    testAnnotationProcessor("org.projectlombok", "lombok", "1.18.20")
 
     add(sourceSets.main.get().getTaskName("mod", JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME), modImplementationAndInclude)
     add(net.fabricmc.loom.util.Constants.Configurations.INCLUDE, modImplementationAndInclude)

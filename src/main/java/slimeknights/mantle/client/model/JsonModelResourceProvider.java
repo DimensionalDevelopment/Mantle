@@ -1,6 +1,7 @@
 package slimeknights.mantle.client.model;
 
 import com.google.common.base.Charsets;
+import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 
 import java.io.BufferedReader;
@@ -18,7 +19,7 @@ import net.fabricmc.fabric.api.client.model.ModelProviderException;
 import net.fabricmc.fabric.api.client.model.ModelResourceProvider;
 
 public abstract class JsonModelResourceProvider implements ModelResourceProvider {
-	private final String type;
+	public String type;
 
 	public JsonModelResourceProvider(String type) {
 		this.type = type;
@@ -34,6 +35,10 @@ public abstract class JsonModelResourceProvider implements ModelResourceProvider
 			throw new ModelProviderException("Unable to get json model object:", e);
 		}
 	}
+
+	public JsonDeserializationContext getContext() {
+	  return JsonUnbakedModel.GSON::fromJson;
+  }
 
 	 abstract public UnbakedModel loadJsonModelResource(Identifier resourceId, JsonObject jsonObject, ModelProviderContext context);
 
