@@ -27,3 +27,7 @@ accessible method net/minecraft/recipe/RecipeManager getAllOfType (Lnet/minecraf
 accessible method   net/minecraft/block/StairsBlock    <init> (Lnet/minecraft/block/BlockState;Lnet/minecraft/block/AbstractBlock$Settings;)V
 
 accessible field net/minecraft/client/render/model/json/JsonUnbakedModel GSON Lcom/google/gson/Gson;
+
+accessible  field   net/minecraft/world/dimension/DimensionType    OVERWORLD  Lnet/minecraft/world/dimension/DimensionType;
+
+accessible  field   net/minecraft/structure/Structure  blockInfoLists   Ljava/util/List;

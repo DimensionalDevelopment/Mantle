@@ -1,26 +1,26 @@
 package slimeknights.mantle.client.screen.book;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.ITextProperties;
-import net.minecraft.util.text.LanguageMap;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.Style;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.StringVisitable;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Language;
 import slimeknights.mantle.client.book.data.element.TextComponentData;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@OnlyIn(Dist.CLIENT)
+@Environment(EnvType.CLIENT)
 public class TextComponentDataRenderer {
 
   /**
@@ -38,7 +38,7 @@ public class TextComponentDataRenderer {
    * @param tooltip     the list of tooltips
    * @return the action if there's any
    */
-  public static String drawText(MatrixStack matrixStack, int x, int y, int boxWidth, int boxHeight, TextComponentData[] data, int mouseX, int mouseY, FontRenderer fr, List<ITextComponent> tooltip) {
+  public static String drawText(MatrixStack matrixStack, int x, int y, int boxWidth, int boxHeight, TextComponentData[] data, int mouseX, int mouseY, TextRenderer fr, List<Text> tooltip) {
     String action = "";
 
     int atX = x;
@@ -47,7 +47,7 @@ public class TextComponentDataRenderer {
     float prevScale = 1.F;
 
     for (TextComponentData item : data) {
-      int box1X, box1Y, box1W = 9999, box1H = y + fr.FONT_HEIGHT;
+      int box1X, box1Y, box1W = 9999, box1H = y + fr.fontHeight;
       int box2X, box2Y = 9999, box2W, box2H;
       int box3X = 9999, box3Y = 9999, box3W, box3H;
 
@@ -57,18 +57,18 @@ public class TextComponentDataRenderer {
 
       if (item.text.getString().equals("\n")) {
         atX = x;
-        atY += fr.FONT_HEIGHT;
+        atY += fr.fontHeight;
         continue;
       }
 
       if (item.isParagraph) {
         atX = x;
-        atY += fr.FONT_HEIGHT * 2 * prevScale;
+        atY += fr.fontHeight * 2 * prevScale;
       }
 
       prevScale = item.scale;
 
-      List<ITextProperties> textLines = splitTextComponentBySize(item.text, boxWidth, boxHeight - (atY - y), boxWidth - (atX - x), fr, item.scale);
+      List<StringVisitable> textLines = splitTextComponentBySize(item.text, boxWidth, boxHeight - (atY - y), boxWidth - (atX - x), fr, item.scale);
 
       box1X = atX;
       box1Y = atY;
@@ -81,11 +81,11 @@ public class TextComponentDataRenderer {
           box3Y = atY;
         }
 
-        ITextProperties textComponent = textLines.get(lineNumber);
+        StringVisitable textComponent = textLines.get(lineNumber);
         drawScaledTextComponent(matrixStack, fr, textComponent, atX, atY, item.dropShadow, item.scale);
 
         if (lineNumber < textLines.size() - 1) {
-          atY += fr.FONT_HEIGHT;
+          atY += fr.fontHeight;
           atX = x;
         }
 
@@ -102,14 +102,14 @@ public class TextComponentDataRenderer {
 
       box2H = atY;
 
-      atX += fr.func_243245_a(LanguageMap.getInstance().func_241870_a(textLines.get(textLines.size() - 1))) * item.scale;
+      atX += fr.getWidth(Language.getInstance().reorder(textLines.get(textLines.size() - 1))) * item.scale;
       if (atX - x >= boxWidth) {
         atX = x;
-        atY += fr.FONT_HEIGHT * item.scale;
+        atY += fr.fontHeight * item.scale;
       }
 
       box3W = atX;
-      box3H = (int) (atY + fr.FONT_HEIGHT * item.scale);
+      box3H = (int) (atY + fr.fontHeight * item.scale);
 
       boolean mouseCheck = (mouseX >= box1X && mouseX <= box1W && mouseY >= box1Y && mouseY <= box1H && box1X != box1W && box1Y != box1H) || (mouseX >= box2X && mouseX <= box2W && mouseY >= box2Y && mouseY <= box2H && box2X != box2W && box2Y != box2H) || (mouseX >= box3X && mouseX <= box3W && mouseY >= box3Y && mouseY <= box3H && box3X != box3W && box1Y != box3H);
 
@@ -135,9 +135,9 @@ public class TextComponentDataRenderer {
 
       if (atY >= y + boxHeight) {
         if (item.dropShadow) {
-          fr.drawStringWithShadow(matrixStack, "...", atX, atY, 0);
+          fr.drawWithShadow(matrixStack, "...", atX, atY, 0);
         } else {
-          fr.drawString(matrixStack, "...", atX, atY, 0);
+          fr.draw(matrixStack, "...", atX, atY, 0);
         }
         break;
       }
@@ -146,8 +146,8 @@ public class TextComponentDataRenderer {
     }
 
     if (BookScreen.debug && !action.isEmpty()) {
-      tooltip.add(StringTextComponent.EMPTY);
-      tooltip.add(new StringTextComponent("Action: " + action).mergeStyle(TextFormatting.GRAY));
+      tooltip.add(LiteralText.EMPTY);
+      tooltip.add(new LiteralText("Action: " + action).formatted(Formatting.GRAY));
     }
 
     return action;
@@ -162,19 +162,19 @@ public class TextComponentDataRenderer {
    * @param scale         the scale to use
    * @return the list of split text components based on the given size
    */
-  public static List<ITextProperties> splitTextComponentBySize(ITextComponent textComponent, int width, int height, int firstWidth, FontRenderer fontRenderer, float scale) {
-    int curWidth = (int) (fontRenderer.getStringPropertyWidth(textComponent) * scale);
+  public static List<StringVisitable> splitTextComponentBySize(Text textComponent, int width, int height, int firstWidth, TextRenderer fontRenderer, float scale) {
+    int curWidth = (int) (fontRenderer.getWidth(textComponent) * scale);
 
-    int curHeight = (int) (fontRenderer.FONT_HEIGHT * scale);
+    int curHeight = (int) (fontRenderer.fontHeight * scale);
     boolean needsWrap = false;
-    List<ITextProperties> textLines = new ArrayList<>();
+    List<StringVisitable> textLines = new ArrayList<>();
 
-    if ((curHeight == (int) (fontRenderer.FONT_HEIGHT * scale) && curWidth > firstWidth) || (curHeight != (int) (fontRenderer.FONT_HEIGHT * scale) && curWidth > width)) {
+    if ((curHeight == (int) (fontRenderer.fontHeight * scale) && curWidth > firstWidth) || (curHeight != (int) (fontRenderer.fontHeight * scale) && curWidth > width)) {
       needsWrap = true;
     }
 
     if (needsWrap) {
-      textLines = new ArrayList<>(fontRenderer.getCharacterManager().func_238362_b_(textComponent, firstWidth, Style.EMPTY));
+      textLines = new ArrayList<>(fontRenderer.getTextHandler().wrapLines(textComponent, firstWidth, Style.EMPTY));
     } else {
       textLines.add(textComponent);
     }
@@ -193,15 +193,15 @@ public class TextComponentDataRenderer {
    * @param dropShadow    if there should be a shadow on the text
    * @param scale         the scale to render as
    */
-  public static void drawScaledTextComponent(MatrixStack matrixStack, FontRenderer font, ITextProperties textComponent, float x, float y, boolean dropShadow, float scale) {
+  public static void drawScaledTextComponent(MatrixStack matrixStack, TextRenderer font, StringVisitable textComponent, float x, float y, boolean dropShadow, float scale) {
     RenderSystem.pushMatrix();
     RenderSystem.translatef(x, y, 0);
     RenderSystem.scalef(scale, scale, 1F);
 
     if (dropShadow) {
-      font.func_238407_a_(matrixStack, LanguageMap.getInstance().func_241870_a(textComponent), 0, 0, 0);
+      font.drawWithShadow(matrixStack, Language.getInstance().reorder(textComponent), 0, 0, 0);
     } else {
-      font.func_238422_b_(matrixStack, LanguageMap.getInstance().func_241870_a(textComponent), 0, 0, 0);
+      font.drawWithShadow(matrixStack, Language.getInstance().reorder(textComponent), 0, 0, 0);
     }
 
     RenderSystem.popMatrix();
@@ -233,11 +233,11 @@ public class TextComponentDataRenderer {
     RenderSystem.shadeModel(7425);
     Tessellator tessellator = Tessellator.getInstance();
     BufferBuilder vertexBuffer = tessellator.getBuffer();
-    vertexBuffer.begin(7, DefaultVertexFormats.POSITION_COLOR);
-    vertexBuffer.pos((double) right, (double) top, 0D).color(f1, f2, f3, f).endVertex();
-    vertexBuffer.pos((double) left, (double) top, 0D).color(f1, f2, f3, f).endVertex();
-    vertexBuffer.pos((double) left, (double) bottom, 0D).color(f5, f6, f7, f4).endVertex();
-    vertexBuffer.pos((double) right, (double) bottom, 0D).color(f5, f6, f7, f4).endVertex();
+    vertexBuffer.begin(7, VertexFormats.POSITION_COLOR);
+    vertexBuffer.vertex(right, top, 0D).color(f1, f2, f3, f).next();
+    vertexBuffer.vertex(left, top, 0D).color(f1, f2, f3, f).next();
+    vertexBuffer.vertex(left, bottom, 0D).color(f5, f6, f7, f4).next();
+    vertexBuffer.vertex(right, bottom, 0D).color(f5, f6, f7, f4).next();
     tessellator.draw();
     RenderSystem.shadeModel(7424);
     RenderSystem.enableAlphaTest();

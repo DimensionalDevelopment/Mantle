@@ -5,31 +5,31 @@ package slimeknights.mantle.client.book.structure.world;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.world.DummyClientTickScheduler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.item.crafting.RecipeManager;
-import net.minecraft.profiler.EmptyProfiler;
+import net.minecraft.item.map.MapState;
+import net.minecraft.recipe.RecipeManager;
 import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.tags.ITagCollectionSupplier;
-import net.minecraft.util.Direction;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.structure.Structure;
+import net.minecraft.tag.TagManager;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.DynamicRegistries;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.profiler.DummyProfiler;
+import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.EmptyTickList;
-import net.minecraft.world.ITickList;
+import net.minecraft.world.TickScheduler;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.Biomes;
-import net.minecraft.world.chunk.AbstractChunkProvider;
-import net.minecraft.world.gen.feature.template.Template.BlockInfo;
-import net.minecraft.world.storage.MapData;
+import net.minecraft.world.biome.BiomeKeys;
+import net.minecraft.world.chunk.ChunkManager;
+import net.minecraft.world.dimension.DimensionType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,48 +37,50 @@ import java.util.function.Predicate;
 
 public class TemplateWorld extends World {
 
-  private final Map<String, MapData> maps = new HashMap<>();
+  private final Map<String, MapState> maps = new HashMap<>();
   private final Scoreboard scoreboard = new Scoreboard();
   private final RecipeManager recipeManager = new RecipeManager();
   private final TemplateChunkProvider chunkProvider;
-  private final DynamicRegistries registries = DynamicRegistries.func_239770_b_();
+  private final DynamicRegistryManager registries = DynamicRegistryManager.create();
 
-  public TemplateWorld(List<BlockInfo> blocks, Predicate<BlockPos> shouldShow) {
+  public TemplateWorld(List<Structure.StructureBlockInfo> blocks, Predicate<BlockPos> shouldShow) {
     super(
-      new FakeSpawnInfo(), World.OVERWORLD, DimensionType.OVERWORLD_TYPE,
-      () -> EmptyProfiler.INSTANCE, true, false, 0
+      new FakeSpawnInfo(), World.OVERWORLD, DimensionType.OVERWORLD,
+      () -> DummyProfiler.INSTANCE, true, false, 0
     );
 
     this.chunkProvider = new TemplateChunkProvider(blocks, this, shouldShow);
   }
 
   @Override
-  public void notifyBlockUpdate(@Nonnull BlockPos pos, @Nonnull BlockState oldState, @Nonnull BlockState newState, int flags) {
+  public void updateListeners(BlockPos pos, BlockState oldState, BlockState newState, int flags) {
+
   }
 
   @Override
-  public void playSound(@Nullable PlayerEntity player, double x, double y, double z, @Nonnull SoundEvent soundIn, @Nonnull SoundCategory category, float volume, float pitch) {
+  public void playSound(@Nullable PlayerEntity player, double x, double y, double z, @NotNull SoundEvent soundIn, @NotNull SoundCategory category, float volume, float pitch) {
   }
 
   @Override
-  public void playMovingSound(@Nullable PlayerEntity playerIn, @Nonnull Entity entityIn, @Nonnull SoundEvent eventIn, @Nonnull SoundCategory categoryIn, float volume, float pitch) {
+  public void playSoundFromEntity(@Nullable PlayerEntity player, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch) {
+
   }
 
   @Nullable
   @Override
-  public Entity getEntityByID(int id) {
+  public Entity getEntityById(int id) {
     return null;
   }
 
   @Nullable
   @Override
-  public MapData getMapData(@Nonnull String mapName) {
+  public MapState getMapState(@NotNull String mapName) {
     return this.maps.get(mapName);
   }
 
   @Override
-  public void registerMapData(@Nonnull MapData mapDataIn) {
-    this.maps.put(mapDataIn.getName(), mapDataIn);
+  public void putMapState(MapState mapState) {
+
   }
 
   @Override
@@ -87,69 +89,67 @@ public class TemplateWorld extends World {
   }
 
   @Override
-  public void sendBlockBreakProgress(int breakerId, @Nonnull BlockPos pos, int progress) {
+  public void setBlockBreakingInfo(int breakerId, @NotNull BlockPos pos, int progress) {
   }
 
-  @Nonnull
+  @NotNull
   @Override
   public Scoreboard getScoreboard() {
     return this.scoreboard;
   }
 
-  @Nonnull
+  @NotNull
   @Override
   public RecipeManager getRecipeManager() {
     return this.recipeManager;
   }
 
-  @Nonnull
+  @NotNull
   @Override
-  public ITagCollectionSupplier getTags() {
-    return ITagCollectionSupplier.TAG_COLLECTION_SUPPLIER;
+  public TagManager getTagManager() {
+    return TagManager.EMPTY;
   }
 
-  @Nonnull
+  @NotNull
   @Override
-  public ITickList<Block> getPendingBlockTicks() {
-    return EmptyTickList.get();
+  public TickScheduler<Block> getBlockTickScheduler() {
+    return DummyClientTickScheduler.get();
   }
 
-  @Nonnull
+  @NotNull
   @Override
-  public ITickList<Fluid> getPendingFluidTicks() {
-    return EmptyTickList.get();
+  public TickScheduler<Fluid> getFluidTickScheduler() {
+    return DummyClientTickScheduler.get();
   }
 
-  @Nonnull
   @Override
-  public AbstractChunkProvider getChunkProvider() {
+  public ChunkManager getChunkManager() {
     return this.chunkProvider;
   }
 
   @Override
-  public void playEvent(@Nullable PlayerEntity player, int type, @Nonnull BlockPos pos, int data) {
+  public void syncWorldEvent(@Nullable PlayerEntity player, int eventId, BlockPos pos, int data) {
+
   }
 
-  @Nonnull
-  @Override
-  public DynamicRegistries func_241828_r() {
-    return this.registries;
-  }
-
-  @Override
-  public float func_230487_a_(@Nonnull Direction p_230487_1_, boolean p_230487_2_) {
-    return 0;
-  }
-
-  @Nonnull
+  @NotNull
   @Override
   public List<? extends PlayerEntity> getPlayers() {
     return ImmutableList.of();
   }
 
-  @Nonnull
   @Override
-  public Biome getNoiseBiomeRaw(int x, int y, int z) {
-    return this.func_241828_r().getRegistry(Registry.BIOME_KEY).getOrThrow(Biomes.PLAINS);
+  public DynamicRegistryManager getRegistryManager() {
+    return this.registries;
+  }
+
+  @Override
+  public float getBrightness(Direction direction, boolean shaded) {
+    return 0;
+  }
+
+  @Override
+  public Biome getGeneratorStoredBiome(int biomeX, int biomeY, int biomeZ) {
+    return this.getRegistryManager().get(Registry.BIOME_KEY).getOrThrow(BiomeKeys.PLAINS);
   }
 }

@@ -9,6 +9,7 @@ import net.minecraft.tag.TagGroup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DefaultedRegistry;
 import slimeknights.mantle.Mantle;
+import slimeknights.mantle.config.MantleConfig;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -50,15 +51,17 @@ public class TagPreference<T> {
    * @param entry  Registry entry to check
    * @return  Sort index for that entry
    */
-  private static int getSortIndex(IForgeRegistryEntry<?> entry) {
-    List<? extends String> entries = Config.TAG_PREFERENCES.get();
+  private static <T> int getSortIndex(T entry) {
+/*    List<? extends String> entries = MantleConfig.TAG_PREFERENCES.get();
     // check the index of the namespace in the preference list
     int index = Mantle.config.tagPreferences.indexOf(Objects.requireNonNull(registry.getId(entry)).getNamespace());
     // if missing, declare last
     if (index == -1) {
       return Mantle.config.tagPreferences.size();
     }
-    return index;
+    return index;*/
+    return -1;
+    // FIXME: PORT
   }
 
   /**
@@ -86,7 +89,7 @@ public class TagPreference<T> {
 
       // copy and sort list
       List<? extends T> sortedElements = Lists.newArrayList(elements);
-      sortedElements.sort(Comparator.comparingInt(this::getSortIndex));
+      sortedElements.sort(Comparator.comparingInt(TagPreference::getSortIndex));
       // return first element, its the preference
       return Optional.of(sortedElements.get(0));
     });

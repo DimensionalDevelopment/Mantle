@@ -1,25 +1,20 @@
 package slimeknights.mantle.client.screen.book.element;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.DiffuseLighting;
+import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.BlockRenderManager;
-import net.minecraft.client.texture.SpriteAtlasTexture;
+import net.minecraft.client.util.math.AffineTransformation;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.util.math.Vector3f;
+import net.minecraft.structure.Structure;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Quaternion;
-import net.minecraft.util.math.vector.TransformationMatrix;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.world.gen.feature.template.Template;
-import net.minecraftforge.client.model.data.EmptyModelData;
-import net.minecraftforge.client.model.data.IModelData;
+import net.minecraft.util.math.Quaternion;
 import slimeknights.mantle.client.book.structure.StructureInfo;
 import slimeknights.mantle.client.book.structure.world.TemplateWorld;
 import slimeknights.mantle.client.screen.book.BookScreen;
@@ -34,14 +29,14 @@ public class StructureElement extends SizedBookElement {
   public float scale = 50f;
   public float transX = 0;
   public float transY = 0;
-  public TransformationMatrix additionalTransform;
+  public AffineTransformation additionalTransform;
   public final StructureInfo renderInfo;
   public final TemplateWorld structureWorld;
 
   public long lastStep = -1;
   public long lastPrintedErrorTimeMs = -1;
 
-  public StructureElement(int x, int y, int width, int height, Template template, List<Template.BlockInfo> structure) {
+  public StructureElement(int x, int y, int width, int height, Structure template, List<Structure.StructureBlockInfo> structure) {
     super(x, y, width, height);
 
     int[] size = {template.getSize().getX(), template.getSize().getY(), template.getSize().getZ()};
@@ -60,13 +55,13 @@ public class StructureElement extends SizedBookElement {
     this.transX = x + width / 2F;
     this.transY = y + height / 2F;
 
-    this.additionalTransform = new TransformationMatrix(null, new Quaternion(25, 0, 0, true), null, new Quaternion(0, -45, 0, true));
+    this.additionalTransform = new AffineTransformation(null, new Quaternion(25, 0, 0, true), null, new Quaternion(0, -45, 0, true));
   }
 
   @Override
-  public void draw(MatrixStack transform, int mouseX, int mouseY, float partialTicks, FontRenderer fontRenderer) {
-    IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.getImpl(Tessellator.getInstance().getBuffer());
-    MatrixStack.Entry lastEntryBeforeTry = transform.getLast();
+  public void draw(MatrixStack transform, int mouseX, int mouseY, float partialTicks, TextRenderer fontRenderer) {
+    VertexConsumerProvider.Immediate buffer = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
+    MatrixStack.Entry lastEntryBeforeTry = transform.peek();
 
     try {
       long currentTime = System.currentTimeMillis();
@@ -92,8 +87,8 @@ public class StructureElement extends SizedBookElement {
 
       transform.translate(this.transX, this.transY, Math.max(structureHeight, Math.max(structureWidth, structureLength)));
       transform.scale(this.scale, -this.scale, 1);
-      this.additionalTransform.push(transform);
-      transform.rotate(new Quaternion(0, 0, 0, true));
+      push(this.additionalTransform, transform);
+      transform.multiply(new Quaternion(0, 0, 0, true));
 
       transform.translate(structureLength / -2f, structureHeight / -2f, structureWidth / -2f);
 
@@ -103,26 +98,24 @@ public class StructureElement extends SizedBookElement {
             BlockPos pos = new BlockPos(l, h, w);
             BlockState state = this.structureWorld.getBlockState(pos);
 
-            if (!state.isAir(this.structureWorld, pos)) {
+            if (!this.structureWorld.getBlockState(pos).isAir()) {
               transform.push();
               transform.translate(l, h, w);
 
               int overlay;
 
               if (pos.equals(new BlockPos(1, 1, 1)))
-                overlay = OverlayTexture.getPackedUV(0, true);
+                overlay = OverlayTexture.getUv(0, true);
               else
-                overlay = OverlayTexture.NO_OVERLAY;
+                overlay = OverlayTexture.DEFAULT_UV;
 
-              IModelData modelData = EmptyModelData.INSTANCE;
-              TileEntity te = structureWorld.getTileEntity(pos);
+              BlockEntity te = structureWorld.getBlockEntity(pos);
 
               if (te != null)
-                modelData = te.getModelData();
 
-              RenderSystem.disableLighting();
+                RenderSystem.disableLighting();
 
-              blockRender.renderBlock(state, transform, buffer, 0xf000f0, overlay, modelData);
+              blockRender.renderBlockAsEntity(state, transform, buffer, 0xf000f0, overlay);
               transform.pop();
             }
           }
@@ -140,11 +133,15 @@ public class StructureElement extends SizedBookElement {
         this.lastPrintedErrorTimeMs = now;
       }
 
-      while (lastEntryBeforeTry != transform.getLast())
+      while (lastEntryBeforeTry != transform.peek())
         transform.pop();
     }
 
-    buffer.finish();
+    buffer.draw();
+  }
+
+  private static void push(AffineTransformation transformation, MatrixStack stack) {
+    stack.peek().getModel().multiply(transformation.getMatrix());
   }
 
   @Override
@@ -156,7 +153,7 @@ public class StructureElement extends SizedBookElement {
   public void mouseDragged(double clickX, double clickY, double mouseX, double mouseY, double lastX, double lastY, int button) {
     double dx = mouseX - lastX;
     double dy = mouseY - lastY;
-    this.additionalTransform = forRotation(dx * 80D / 104, dy * 0.8).compose(this.additionalTransform);
+    this.additionalTransform = forRotation(dx * 80D / 104, dy * 0.8).multiply(this.additionalTransform);
   }
 
   @Override
@@ -164,13 +161,13 @@ public class StructureElement extends SizedBookElement {
     super.mouseReleased(mouseX, mouseY, clickedMouseButton);
   }
 
-  private TransformationMatrix forRotation(double rX, double rY) {
+  private AffineTransformation forRotation(double rX, double rY) {
     Vector3f axis = new Vector3f((float) rY, (float) rX, 0);
     float angle = (float) Math.sqrt(axis.dot(axis));
 
     if (!axis.normalize())
-      return TransformationMatrix.identity();
+      return AffineTransformation.identity();
 
-    return new TransformationMatrix(null, new Quaternion(axis, angle, true), null, null);
+    return new AffineTransformation(null, new Quaternion(axis, angle, true), null, null);
   }
 }

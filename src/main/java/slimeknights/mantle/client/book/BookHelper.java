@@ -2,6 +2,8 @@ package slimeknights.mantle.client.book;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Objects;
 
 public class BookHelper {
@@ -34,7 +36,7 @@ public class BookHelper {
   public static String getCurrentSavedPage(@Nullable ItemStack item) {
     if (item != null) {
       if (!item.isEmpty() && item.hasTag()) {
-        CompoundNBT bookNBT = item.getOrCreateTag().getCompound(BOOK_COMPOUND).getCompound(BOOK_DATA_COMPOUND);
+        CompoundTag bookNBT = item.getOrCreateTag().getCompound(BOOK_COMPOUND).getCompound(BOOK_DATA_COMPOUND);
 
         if (bookNBT.contains(NBT_CURRENT_PAGE, 8)) {
           return bookNBT.getString(NBT_CURRENT_PAGE);
@@ -64,10 +66,10 @@ public class BookHelper {
    * @param currentPage the current open page
    */
   public static void writeSavedPageToBook(ItemStack stack, String currentPage) {
-    CompoundNBT compoundNBT = stack.getOrCreateTag();
+    CompoundTag compoundNBT = stack.getOrCreateTag();
 
-    CompoundNBT mantleCompound = compoundNBT.getCompound(BOOK_COMPOUND);
-    CompoundNBT bookCompound = compoundNBT.getCompound(BOOK_DATA_COMPOUND);
+    CompoundTag mantleCompound = compoundNBT.getCompound(BOOK_COMPOUND);
+    CompoundTag bookCompound = compoundNBT.getCompound(BOOK_DATA_COMPOUND);
 
     bookCompound.putString(NBT_CURRENT_PAGE, currentPage);
 

@@ -1,21 +1,17 @@
 package slimeknights.mantle.client.render;
 
-import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.*;
+import net.minecraft.client.render.OverlayTexture;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.model.json.ModelTransformation.Mode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.item.ItemStack;
 import net.minecraft.state.property.Properties;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Matrix4f;
 
 import java.util.List;
 
@@ -84,18 +80,20 @@ public class RenderingHelper {
    */
   @Deprecated
   public static void drawHoveringText(MatrixStack mStack, List<Text> textLines, int mouseX, int mouseY, int screenWidth, int screenHeight, int maxTextWidth, TextRenderer font) {
-    GuiUtils.drawHoveringText(mStack, textLines, mouseX, mouseY, screenWidth, screenHeight, maxTextWidth,
-            0xF0100010,
-            0x505000FF,
-            (0x505000FF & 0xFEFEFE) >> 1 | 0x505000FF & 0xFF000000, font);
+    // FIXME: PORT
+//    GuiUtils.drawHoveringText(mStack, textLines, mouseX, mouseY, screenWidth, screenHeight, maxTextWidth,
+//            0xF0100010,
+//            0x505000FF,
+//            (0x505000FF & 0xFEFEFE) >> 1 | 0x505000FF & 0xFF000000, font);
   }
 
   /**
    * @deprecated   Remove in 1.17, use {@link GuiUtils#drawHoveringText(MatrixStack, List, int, int, int, int, int, int, int, int, TextRenderer)}
    */
   @Deprecated
-  private static void drawHoveringText(MatrixStack mStack, List<ITextComponent> textLines, int mouseX, int mouseY, int screenWidth, int screenHeight, int maxTextWidth,
-                                       int backgroundColor, int borderColorStart, int borderColorEnd, FontRenderer font) {
-    GuiUtils.drawHoveringText(mStack, textLines, mouseX, mouseY, screenWidth, screenHeight, maxTextWidth, backgroundColor, borderColorStart, borderColorEnd, font);
+  private static void drawHoveringText(MatrixStack mStack, List<Text> textLines, int mouseX, int mouseY, int screenWidth, int screenHeight, int maxTextWidth,
+                                       int backgroundColor, int borderColorStart, int borderColorEnd, TextRenderer font) {
+    // FIXME: PORT
+//    GuiUtils.drawHoveringText(mStack, textLines, mouseX, mouseY, screenWidth, screenHeight, maxTextWidth, backgroundColor, borderColorStart, borderColorEnd, font);
   }
 }

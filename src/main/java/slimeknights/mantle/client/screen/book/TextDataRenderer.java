@@ -13,7 +13,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraftforge.fml.client.gui.GuiUtils;
 import org.apache.commons.lang3.StringUtils;
 import slimeknights.mantle.Mantle;
 import slimeknights.mantle.client.book.data.element.TextData;
@@ -231,7 +230,9 @@ public class TextDataRenderer {
 
   //BEGIN METHODS FROM GUI
   public static void drawTooltip(MatrixStack matrixStack, List<Text> textLines, int mouseX, int mouseY, TextRenderer font) {
-    GuiUtils.drawHoveringText(matrixStack, textLines, mouseX, mouseY, BookScreen.PAGE_WIDTH, BookScreen.PAGE_HEIGHT, BookScreen.PAGE_WIDTH, font);
+    for (Text text : textLines) { // FIXME: PORT (was GuiUtils.drawHoverText)
+      font.draw(matrixStack, text, (float) BookScreen.PAGE_WIDTH, (float) BookScreen.PAGE_HEIGHT, BookScreen.PAGE_WIDTH);
+    }
     DiffuseLighting.disable();
   }
 

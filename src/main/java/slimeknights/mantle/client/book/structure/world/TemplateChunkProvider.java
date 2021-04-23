@@ -3,19 +3,19 @@
 package slimeknights.mantle.client.book.structure.world;
 
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.structure.Structure;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.IBlockReader;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.AbstractChunkProvider;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.ChunkManager;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.EmptyChunk;
-import net.minecraft.world.chunk.IChunk;
-import net.minecraft.world.gen.feature.template.Template.BlockInfo;
-import net.minecraft.world.lighting.WorldLightManager;
+import net.minecraft.world.chunk.light.LightingProvider;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,18 +23,18 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class TemplateChunkProvider extends AbstractChunkProvider {
+public class TemplateChunkProvider extends ChunkManager {
 
-  private final Map<ChunkPos, IChunk> chunks;
+  private final Map<ChunkPos, Chunk> chunks;
   private final World world;
-  private final WorldLightManager lightManager;
+  private final LightingProvider lightManager;
 
-  public TemplateChunkProvider(List<BlockInfo> blocks, World world, Predicate<BlockPos> shouldShow) {
+  public TemplateChunkProvider(List<Structure.StructureBlockInfo> blocks, World world, Predicate<BlockPos> shouldShow) {
     this.world = world;
-    this.lightManager = new WorldLightManager(this, true, true);
-    Map<ChunkPos, List<BlockInfo>> byChunk = new HashMap<>();
+    this.lightManager = new LightingProvider(this, true, true);
+    Map<ChunkPos, List<Structure.StructureBlockInfo>> byChunk = new HashMap<>();
 
-    for (BlockInfo info : blocks) {
+    for (Structure.StructureBlockInfo info : blocks) {
       byChunk.computeIfAbsent(new ChunkPos(info.pos), $ -> new ArrayList<>()).add(info);
     }
 
@@ -45,25 +45,23 @@ public class TemplateChunkProvider extends AbstractChunkProvider {
 
   @Nullable
   @Override
-  public IChunk getChunk(int chunkX, int chunkZ, @Nonnull ChunkStatus requiredStatus, boolean load) {
+  public Chunk getChunk(int chunkX, int chunkZ, @NotNull ChunkStatus requiredStatus, boolean load) {
     return this.chunks.computeIfAbsent(new ChunkPos(chunkX, chunkZ), p -> new EmptyChunk(world, p));
   }
 
-  @Nonnull
   @Override
-  public String makeString() {
+  public String getDebugString() {
     return "?";
   }
 
-  @Nonnull
   @Override
-  public WorldLightManager getLightManager() {
+  public LightingProvider getLightingProvider() {
     return this.lightManager;
   }
 
-  @Nonnull
+  @NotNull
   @Override
-  public IBlockReader getWorld() {
+  public BlockView getWorld() {
     return this.world;
   }
 }

@@ -1,30 +1,28 @@
 package slimeknights.mantle.client.book.data.element;
 
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 
-@OnlyIn(Dist.CLIENT)
+@Environment(EnvType.CLIENT)
 public class TextComponentData {
 
   public static final TextComponentData LINEBREAK = new TextComponentData("\n");
 
-  public ITextComponent text;
+  public Text text;
 
   public boolean isParagraph = false;
   public boolean dropShadow = false;
   public float scale = 1.F;
   public String action = "";
-  public ITextComponent[] tooltips = null;
+  public Text[] tooltips = null;
 
   public TextComponentData(String text) {
-    this(new StringTextComponent(text));
+    this(new LiteralText(text));
   }
 
-  public TextComponentData(ITextComponent text) {
+  public TextComponentData(Text text) {
     this.text = text;
   }
-
-
 }

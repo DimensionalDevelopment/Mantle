@@ -1,5 +1,14 @@
 package slimeknights.mantle.client.book.data.content;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.block.Blocks;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.resource.Resource;
+import net.minecraft.structure.Structure;
+import net.minecraft.util.math.BlockPos;
+import slimeknights.mantle.Mantle;
 import slimeknights.mantle.client.book.BookLoader;
 import slimeknights.mantle.client.book.data.BookData;
 import slimeknights.mantle.client.book.data.element.BlockData;
@@ -17,7 +26,7 @@ import net.minecraft.util.ChatUtil;
 import net.minecraft.util.Identifier;
 import java.util.List;
 
-@OnlyIn(Dist.CLIENT)
+@Environment(EnvType.CLIENT)
 public class ContentStructure extends PageContent {
 
   public static final transient String ID = "structure";
@@ -27,8 +36,8 @@ public class ContentStructure extends PageContent {
 
   public String text;
 
-  public final transient Template template = new Template();
-  public transient List<Template.BlockInfo> templateBlocks = new ArrayList<>();
+  public final transient Structure template = new Structure();
+  public transient List<Structure.StructureBlockInfo> templateBlocks = new ArrayList<>();
 
   @Override
   public void load() {
@@ -39,24 +48,24 @@ public class ContentStructure extends PageContent {
     }
 
     Identifier location = repo.getResourceLocation(this.data);
-    IResource resource = repo.getResource(location);
+    Resource resource = repo.getResource(location);
 
     if (resource == null) {
       return;
     }
 
     try {
-      CompoundNBT compoundnbt = CompressedStreamTools.readCompressed(resource.getInputStream());
-      this.template.read(compoundnbt);
+      CompoundTag compoundnbt = NbtIo.readCompressed(resource.getInputStream());
+      this.template.fromTag(compoundnbt);
     } catch (IOException e) {
       e.printStackTrace();
       return;
     }
 
-    this.templateBlocks = this.template.blocks.get(0).func_237157_a_();
+    this.templateBlocks = this.template.blockInfoLists.get(0).getAll();
 
     for (int i = 0; i < this.templateBlocks.size(); i++) {
-      Template.BlockInfo info = this.templateBlocks.get(i);
+      Structure.StructureBlockInfo info = this.templateBlocks.get(i);
       if (info.state == Blocks.AIR.getDefaultState()) {
         this.templateBlocks.remove(i);
         i--;

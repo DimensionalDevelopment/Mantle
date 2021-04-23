@@ -4,9 +4,9 @@ package slimeknights.mantle.client.book.structure.world;
 
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.GameRules;
-import net.minecraft.world.storage.ISpawnWorldInfo;
+import net.minecraft.world.MutableWorldProperties;
 
-public class FakeSpawnInfo implements ISpawnWorldInfo {
+public class FakeSpawnInfo implements MutableWorldProperties {
 
   private static final GameRules RULES = new GameRules();
 
@@ -56,12 +56,12 @@ public class FakeSpawnInfo implements ISpawnWorldInfo {
   }
 
   @Override
-  public long getGameTime() {
+  public long getTime() {
     return 0;
   }
 
   @Override
-  public long getDayTime() {
+  public long getTimeOfDay() {
     return 0;
   }
 
@@ -86,7 +86,7 @@ public class FakeSpawnInfo implements ISpawnWorldInfo {
   }
 
   @Override
-  public GameRules getGameRulesInstance() {
+  public GameRules getGameRules() {
     return RULES;
   }
 
