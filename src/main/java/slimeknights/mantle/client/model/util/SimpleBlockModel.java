@@ -88,7 +88,6 @@ public class SimpleBlockModel implements BakedModel, UnbakedModel {
    * Gets the elements in this simple block model
    * @return  Elements in the model
    */
-  @SuppressWarnings("deprecation")
   public List<ModelElement> getElements() {
     return parts.isEmpty() && parent != null ? parent.getElements() : parts;
   }
@@ -194,6 +193,11 @@ public class SimpleBlockModel implements BakedModel, UnbakedModel {
       }
     }
     return textures;
+  }
+
+  public static Collection<SpriteIdentifier> getTextures(JsonUnbakedModel owner, Function<Identifier, UnbakedModel> elements, Set<Pair<String,String>> missingTextureErrors) {
+    // always need a particle texture
+    return Sets.newHashSet(owner.resolveSprite("particle"));
   }
 
   /**

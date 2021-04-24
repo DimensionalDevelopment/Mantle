@@ -37,4 +37,5 @@ accessible  method  net/minecraft/client/render/model/json/JsonUnbakedModel    c
 accessible  field   net/minecraft/client/render/model/json/JsonUnbakedModel    parentId   Lnet/minecraft/util/Identifier;
 accessible  field   net/minecraft/client/render/model/json/JsonUnbakedModel    parent Lnet/minecraft/client/render/model/json/JsonUnbakedModel;
 accessible  field   net/minecraft/client/render/model/json/JsonUnbakedModel    textureMap Ljava/util/Map;
-accessible  method   net/minecraft/client/render/model/json/ModelOverrideList   <init>    ()V
+accessible  method  net/minecraft/client/render/model/json/ModelOverrideList   <init>    ()V
+accessible  method  net/minecraft/client/render/model/ModelLoader  stateKeyToPredicate  (Lnet/minecraft/state/StateManager;Ljava/lang/String;)Ljava/util/function/Predicate;

@@ -1,7 +1,6 @@
 package slimeknights.mantle.client.model.util;
 
 import com.mojang.datafixers.util.Either;
-import lombok.AllArgsConstructor;
 import net.minecraft.client.render.model.UnbakedModel;
 import net.minecraft.client.render.model.json.JsonUnbakedModel;
 import net.minecraft.client.util.SpriteIdentifier;
@@ -12,7 +11,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-@AllArgsConstructor
 public class ModelTextureIteratable implements Iterable<Map<String,Either<SpriteIdentifier, String>>> {
   /** Initial map for iteration */
   @Nullable
@@ -27,6 +25,11 @@ public class ModelTextureIteratable implements Iterable<Map<String,Either<Sprite
    */
   public ModelTextureIteratable(JsonUnbakedModel model) {
     this(null, model);
+  }
+
+  public ModelTextureIteratable(@Nullable Map<String, Either<SpriteIdentifier, String>> startMap, @Nullable JsonUnbakedModel startModel) {
+    this.startMap = startMap;
+    this.startModel = startModel;
   }
 
   /**
@@ -48,7 +51,6 @@ public class ModelTextureIteratable implements Iterable<Map<String,Either<Sprite
     return new MapIterator(startMap, startModel);
   }
 
-  @AllArgsConstructor
   private static class MapIterator implements Iterator<Map<String,Either<SpriteIdentifier, String>>> {
     /** Initial map for iteration */
     @Nullable
@@ -56,6 +58,11 @@ public class ModelTextureIteratable implements Iterable<Map<String,Either<Sprite
     /** current model in the iterator */
     @Nullable
     private JsonUnbakedModel model;
+
+    public MapIterator(@Nullable Map<String, Either<SpriteIdentifier, String>> initial, @Nullable JsonUnbakedModel model) {
+      this.initial = initial;
+      this.model = model;
+    }
 
     @Override
     public boolean hasNext() {

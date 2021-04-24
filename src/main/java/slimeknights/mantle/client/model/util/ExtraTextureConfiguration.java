@@ -1,10 +1,10 @@
 package slimeknights.mantle.client.model.util;
 
 import com.google.common.collect.ImmutableMap;
+import net.minecraft.client.render.model.json.JsonUnbakedModel;
+import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.util.Identifier;
-import net.minecraftforge.client.model.IModelConfiguration;
-import net.minecraftforge.client.model.ModelLoaderRegistry;
 
 import java.util.Map;
 
@@ -19,7 +19,7 @@ public class ExtraTextureConfiguration extends ModelConfigurationWrapper {
    * @param base      Base configuration
    * @param textures  Textures map, any textures in this map will take precedence over those in the base configuration
    */
-  public ExtraTextureConfiguration(IModelConfiguration base, Map<String,SpriteIdentifier> textures) {
+  public ExtraTextureConfiguration(JsonUnbakedModel base, Map<String,SpriteIdentifier> textures) {
     super(base);
     this.textures = textures;
   }
@@ -30,12 +30,12 @@ public class ExtraTextureConfiguration extends ModelConfigurationWrapper {
    * @param name     Texture name, if it matches texture is returned
    * @param texture  Texture path
    */
-  public ExtraTextureConfiguration(IModelConfiguration base, String name, Identifier texture) {
+  public ExtraTextureConfiguration(JsonUnbakedModel base, String name, Identifier texture) {
     super(base);
-    this.textures = ImmutableMap.of(name, ModelLoaderRegistry.blockMaterial(texture));
+    this.textures = ImmutableMap.of(name, new SpriteIdentifier(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, texture));
   }
 
-  @Override
+/*  @Override
   public SpriteIdentifier resolveTexture(String name) {
     SpriteIdentifier connected = textures.get(name);
     if (connected != null) {
@@ -47,5 +47,5 @@ public class ExtraTextureConfiguration extends ModelConfigurationWrapper {
   @Override
   public boolean isTexturePresent(String name) {
     return textures.containsKey(name) || super.isTexturePresent(name);
-  }
+  }*/
 }

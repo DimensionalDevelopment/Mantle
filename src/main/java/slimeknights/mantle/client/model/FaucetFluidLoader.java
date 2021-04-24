@@ -23,9 +23,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Direction.Axis;
 import net.minecraft.util.profiler.Profiler;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.WorldAccess;
-import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.registries.ForgeRegistries;
 import slimeknights.mantle.Mantle;
 import slimeknights.mantle.client.model.fluid.FluidCuboid;
 import slimeknights.mantle.client.render.FluidRenderer;
@@ -117,7 +116,7 @@ public class FaucetFluidLoader extends JsonDataLoader {
         // all others are block
         JsonObject json = JsonHelper.asObject(entry.getValue(), "");
         JsonObject variants = JsonHelper.getObject(json, "variants");
-        Block block = ForgeRegistries.BLOCKS.getValue(location);
+        Block block = Registry.BLOCK.get(location);
         if(block != null && block != Blocks.AIR) {
           StateManager<Block,BlockState> container = block.getStateManager();
           List<BlockState> validStates = container.getStates();
@@ -257,7 +256,7 @@ public class FaucetFluidLoader extends JsonDataLoader {
         int value = element.getAsInt();
         return def.stream().map(cuboid -> {
           Vector3f from = cuboid.getFrom().copy();
-          from.setY(value);
+          from.set(from.getX(), value, from.getZ());
           return new FluidCuboid(from, cuboid.getTo(), cuboid.getFaces());
         }).collect(Collectors.toList());
       } else {

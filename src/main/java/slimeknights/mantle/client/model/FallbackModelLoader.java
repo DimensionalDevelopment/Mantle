@@ -12,6 +12,7 @@ import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
+import slimeknights.mantle.Mantle;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -29,7 +30,7 @@ public class FallbackModelLoader extends JsonModelResourceProvider {
   public static final FallbackModelLoader INSTANCE = new FallbackModelLoader();
 
   public FallbackModelLoader() {
-    super("mantle:fallback");
+    super(Mantle.getResource("fallback"));
   }
 
   @Override

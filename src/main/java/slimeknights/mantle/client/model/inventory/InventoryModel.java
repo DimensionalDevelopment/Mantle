@@ -17,6 +17,7 @@ import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
+import slimeknights.mantle.Mantle;
 import slimeknights.mantle.client.model.HBMABFIB;
 import slimeknights.mantle.client.model.JsonModelResourceProvider;
 import slimeknights.mantle.client.model.util.SimpleBlockModel;
@@ -123,8 +124,7 @@ public class InventoryModel implements UnbakedModel {
     public static final Loader INSTANCE = new Loader();
 
     public Loader() {
-      super("");
-      throw new RuntimeException("CRAB!");
+      super(Mantle.getResource("inventory"));
     }
 
     @Override

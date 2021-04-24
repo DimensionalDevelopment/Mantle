@@ -23,6 +23,7 @@ import net.minecraft.client.render.model.json.ModelOverrideList;
 import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.texture.MissingSprite;
 import net.minecraft.client.texture.Sprite;
+import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
@@ -31,6 +32,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
+import slimeknights.mantle.Mantle;
 import slimeknights.mantle.client.model.util.DynamicBakedWrapper;
 import slimeknights.mantle.client.model.util.ModelConfigurationWrapper;
 import slimeknights.mantle.client.model.util.ModelHelper;
@@ -147,8 +149,7 @@ public class RetexturedModel implements BakedModel, UnbakedModel {
     public static final Loader INSTANCE = new Loader();
 
     public Loader() {
-      super("");
-      throw new RuntimeException("CRAB!");
+      super(Mantle.getResource("retextured"));
     }
 
     /**
@@ -245,7 +246,7 @@ public class RetexturedModel implements BakedModel, UnbakedModel {
 
     @Override
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction direction, Random random) {
-      Collections.emptyList();
+      return Collections.emptyList();
 /*      Block block = data.getData(RetexturedHelper.BLOCK_PROPERTY);
       if (block == null) {
         return originalModel.getQuads(state, direction, random);
@@ -255,7 +256,7 @@ public class RetexturedModel implements BakedModel, UnbakedModel {
 
     @Override
     public ModelOverrideList getOverrides() {
-      return RetexturedOverride.INSTANCE;
+      return ModelOverrideList.EMPTY;
     }
 
     @Override
@@ -268,24 +269,30 @@ public class RetexturedModel implements BakedModel, UnbakedModel {
    * Model configuration wrapper to retexture the block
    */
   public static class RetexturedConfiguration extends ModelConfigurationWrapper {
-    /** List of textures to retexture */
+
+    /**
+     * List of textures to retexture
+     */
     private final Set<String> retextured;
-    /** Replacement texture */
+    /**
+     * Replacement texture
+     */
     private final SpriteIdentifier texture;
 
     /**
      * Creates a new configuration wrapper
-     * @param base        Original model configuration
-     * @param retextured  Set of textures that should be retextured
-     * @param texture     New texture to replace those in the set
+     *
+     * @param base       Original model configuration
+     * @param retextured Set of textures that should be retextured
+     * @param texture    New texture to replace those in the set
      */
     public RetexturedConfiguration(JsonUnbakedModel base, Set<String> retextured, Identifier texture) {
       super(base);
       this.retextured = retextured;
-      this.texture = ModelLoaderRegistry.blockMaterial(texture);
+      this.texture = new SpriteIdentifier(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, texture);
     }
 
-    @Override
+/*    @Override
     public boolean isTexturePresent(String name) {
       if (retextured.contains(name)) {
         return !MissingSprite.getMissingSpriteId().equals(texture.getTextureId());
@@ -300,35 +307,39 @@ public class RetexturedModel implements BakedModel, UnbakedModel {
       }
       return super.resolveTexture(name);
     }
-  }
+  }*/
 
-  /** Override list to swap the texture in from NBT */
-  private static class RetexturedOverride extends ModelOverrideList {
-    private static final RetexturedOverride INSTANCE = new RetexturedOverride();
+    /**
+     * Override list to swap the texture in from NBT
+     */
+    private static class RetexturedOverride extends ModelOverrideList {
 
-    private RetexturedOverride() {
-      super();
-    }
+      private static final RetexturedOverride INSTANCE = new RetexturedOverride();
 
-    public RetexturedOverride(ModelLoader modelLoader, JsonUnbakedModel unbakedModel, Function<Identifier, UnbakedModel> unbakedModelGetter, List<ModelOverride> overrides) {
-      super(modelLoader, unbakedModel, unbakedModelGetter, overrides);
-    }
-
-    @Nullable
-    @Override
-    public net.minecraft.client.render.model.BakedModel apply(net.minecraft.client.render.model.BakedModel originalModel, ItemStack stack, @Nullable ClientWorld world, @Nullable LivingEntity entity) {
-      if (stack.isEmpty() || !stack.hasTag()) {
-        return originalModel;
+      private RetexturedOverride() {
+        super();
       }
 
-      // get the block first, ensuring its valid
-      Block block = RetexturedBlockItem.getTexture(stack);
-      if (block == Blocks.AIR) {
-        return originalModel;
+      public RetexturedOverride(ModelLoader modelLoader, JsonUnbakedModel unbakedModel, Function<Identifier, UnbakedModel> unbakedModelGetter, List<ModelOverride> overrides) {
+        super(modelLoader, unbakedModel, unbakedModelGetter, overrides);
       }
 
-      // if valid, use the block
-      return ((BakedModel)originalModel).getCachedModel(block);
+      @Nullable
+      @Override
+      public net.minecraft.client.render.model.BakedModel apply(net.minecraft.client.render.model.BakedModel originalModel, ItemStack stack, @Nullable ClientWorld world, @Nullable LivingEntity entity) {
+        if (stack.isEmpty() || !stack.hasTag()) {
+          return originalModel;
+        }
+
+        // get the block first, ensuring its valid
+        Block block = RetexturedBlockItem.getTexture(stack);
+        if (block == Blocks.AIR) {
+          return originalModel;
+        }
+
+        // if valid, use the block
+        return ((BakedModel) originalModel).getCachedModel(block);
+      }
     }
   }
 }

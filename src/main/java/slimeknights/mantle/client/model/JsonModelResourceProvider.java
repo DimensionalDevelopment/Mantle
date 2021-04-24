@@ -25,6 +25,10 @@ public abstract class JsonModelResourceProvider implements ModelResourceProvider
 		this.type = type;
 	}
 
+  public JsonModelResourceProvider(Identifier type) {
+    this.type = type.toString();
+  }
+
 	public UnbakedModel loadModelResource(Identifier resourceId, ModelProviderContext context) throws ModelProviderException {
 		try {
 			JsonObject json = getModelJson(resourceId);
@@ -32,7 +36,7 @@ public abstract class JsonModelResourceProvider implements ModelResourceProvider
 			return json.has("loader") && json.getAsJsonPrimitive("loader").getAsString().equals(type) ? loadJsonModelResource(resourceId, json, context) : null;
 
 		} catch (IOException e) {
-			throw new ModelProviderException("Unable to get json model object:", e);
+			throw new ModelProviderException("Unable to get json model object '" + e.getMessage() + "'");
 		}
 	}
 
