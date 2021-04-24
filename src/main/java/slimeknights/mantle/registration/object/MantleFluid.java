@@ -13,7 +13,7 @@ public abstract class MantleFluid extends AbstractMantleFluid{
   public Still still;
 
   private BlockState blockState;
-  private final Item bucketItem;
+  private Item bucketItem;
 
   public MantleFluid(Item bucketItem, BlockState blockState) {
     this.bucketItem = bucketItem;
@@ -37,6 +37,10 @@ public abstract class MantleFluid extends AbstractMantleFluid{
 
   public void setBlockState(BlockState blockState) {
     this.blockState = blockState;
+  }
+
+  public void setBucketItem(Item bucketItem) {
+    this.bucketItem = bucketItem;
   }
 
   @Override
@@ -98,7 +102,7 @@ public abstract class MantleFluid extends AbstractMantleFluid{
 
     @Override
     public int getLevel(FluidState state) {
-      return state.get(LEVEL);
+      return 8;
     }
   }
 }

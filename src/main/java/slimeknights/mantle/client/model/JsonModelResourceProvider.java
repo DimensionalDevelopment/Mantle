@@ -36,7 +36,7 @@ public abstract class JsonModelResourceProvider implements ModelResourceProvider
 			return json.has("loader") && json.getAsJsonPrimitive("loader").getAsString().equals(type) ? loadJsonModelResource(resourceId, json, context) : null;
 
 		} catch (IOException e) {
-			throw new ModelProviderException("Unable to get json model object '" + e.getMessage() + "'");
+			return null;
 		}
 	}
 
