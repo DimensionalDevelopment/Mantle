@@ -90,8 +90,7 @@ public abstract class FluidIngredient {
     Collection<FluidVolume> fluids = getAllFluids();
     buffer.writeInt(fluids.size());
     for (FluidVolume stack : fluids) {
-      stack.fluidKey.toMcBuffer(buffer);
-      stack.amount().toMcBuffer(buffer);
+      stack.toMcBuffer(buffer);
     }
   }
 
