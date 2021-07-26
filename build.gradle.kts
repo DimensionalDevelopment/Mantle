@@ -1,7 +1,5 @@
-import java.net.URI
-
 plugins {
-    id("fabric-loom") version "0.5.43"
+    id("fabric-loom") version "0.7-SNAPSHOT"
     id("maven-publish")
 }
 

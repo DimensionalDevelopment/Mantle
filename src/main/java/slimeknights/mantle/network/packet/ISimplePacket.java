@@ -1,22 +1,39 @@
 package slimeknights.mantle.network.packet;
 
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import java.io.IOException;
+
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.listener.PacketListener;
 
 /**
  * Packet interface to add common methods for registration
  */
-public interface ISimplePacket {
+public abstract class ISimplePacket<T extends ISimplePacket> implements Packet<PacketListener> {
+
+  public ISimplePacket(PacketByteBuf packetByteBuf) {};
+
   /**
    * Encodes a packet for the buffer
-   * @param buf  Buffer instance
+   *
+   * @param buf Buffer instance
    */
-  void encode(PacketByteBuf buf);
+  public abstract void encode(PacketByteBuf buf);
 
   /**
    * Handles receiving the packet
-   * @param sender the packet sender
+   *
+   * @param playerEntity the packet sender
    */
-  void handle(PlayerEntity playerEntity, PacketSender sender);
+  public abstract void handle(PlayerEntity playerEntity);
+
+  @Override
+  public void write(PacketByteBuf buf) throws IOException {
+    encode(buf);
+  }
+
+  @Override
+  public void apply(PacketListener listener) { }
+
 }

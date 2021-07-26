@@ -5,20 +5,29 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.NetworkSide;
+import net.minecraft.network.NetworkThreadUtils;
+import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.listener.PacketListener;
+import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import org.apache.logging.log4j.util.TriConsumer;
 import slimeknights.mantle.network.packet.ISimplePacket;
+import slimeknights.mantle.network.packet.IThreadsafePacket;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -43,17 +52,19 @@ public class NetworkWrapper {
     ServerPlayNetworking.registerGlobalReceiver(identifier, (minecraftServer, serverPlayerEntity, serverPlayNetworkHandler, packetByteBuf, packetSender) -> {
       int id = packetByteBuf.readInt();
       Packet packet = packetIdMap.get(id);
-      ISimplePacket object = packet.decoder.apply(packetByteBuf);
-
-      packet.consumer.accept(object, serverPlayerEntity, packetSender);
+      ISimplePacket object = (ISimplePacket) packet.decoder.apply(packetByteBuf);
+      if(object instanceof IThreadsafePacket)
+        NetworkThreadUtils.forceMainThread(object, serverPlayNetworkHandler, serverPlayerEntity.getServerWorld());
+      packet.consumer.accept(object, serverPlayerEntity);
     });
 
     ClientPlayNetworking.registerGlobalReceiver(identifier, (minecraftClient, clientPlayNetworkHandler, packetByteBuf, packetSender) -> {
       int id = packetByteBuf.readInt();
       Packet packet = packetIdMap.get(id);
-      ISimplePacket object = packet.decoder.apply(packetByteBuf);
-
-      packet.consumer.accept(object, minecraftClient.player, packetSender);
+      ISimplePacket object = (ISimplePacket) packet.decoder.apply(packetByteBuf);
+      if(object instanceof IThreadsafePacket)
+        NetworkThreadUtils.forceMainThread(object, clientPlayNetworkHandler, minecraftClient);
+      packet.consumer.accept(object, minecraftClient.player);
     });
   }
 
@@ -68,7 +79,7 @@ public class NetworkWrapper {
      * @param decoder    Packet decoder, typically the constructor
      * @param direction  Network direction for validation. Pass null for no direction
      */
-  public <T extends ISimplePacket> void registerPacket(Class<T> clazz, BiConsumer<T, PacketByteBuf> encoder, Function<PacketByteBuf, T> decoder, TriConsumer<T, PlayerEntity, PacketSender> consumer, NetworkSide direction) {
+  public <T extends ISimplePacket> void registerPacket(Class<T> clazz, BiConsumer<T, PacketByteBuf> encoder, Function<PacketByteBuf, T> decoder, BiConsumer<T, PlayerEntity> consumer, NetworkSide direction) {
     Packet packet = Packet.of(id, clazz, encoder, decoder, consumer, direction);
 
     packetIdMap.put(id, packet);
@@ -145,23 +156,24 @@ public class NetworkWrapper {
     }
   }
 
-  static class Packet {
+  public static class Packet<T extends ISimplePacket> {
     NetworkSide direction;
     BiConsumer<ISimplePacket, PacketByteBuf> encoder;
     Function<PacketByteBuf, ISimplePacket> decoder;
-    TriConsumer<ISimplePacket, PlayerEntity, PacketSender> consumer;
+    BiConsumer<T, PlayerEntity> consumer;
     Class<?> clazz;
     int id;
 
-    public static <T extends ISimplePacket> Packet of(int id, Class<T> clazz, BiConsumer<T, PacketByteBuf> encoder, Function<PacketByteBuf, T> decoder, TriConsumer<T, PlayerEntity, PacketSender> consumer, NetworkSide side) {
+    public static <T extends ISimplePacket> Packet of(int id, Class<T> clazz, BiConsumer<T, PacketByteBuf> encoder, Function<PacketByteBuf, T> decoder, BiConsumer<T, PlayerEntity> consumer, NetworkSide side) {
       Packet packet = new Packet();
       packet.clazz = clazz;
-      packet.encoder = (BiConsumer<ISimplePacket, PacketByteBuf>) encoder;
-      packet.decoder = (Function<PacketByteBuf, ISimplePacket>) decoder;
-      packet.consumer = (TriConsumer<ISimplePacket, PlayerEntity, PacketSender>) consumer;
+      packet.encoder = encoder;
+      packet.decoder = decoder;
+      packet.consumer = consumer;
       packet.direction = side;
       packet.id = id;
       return packet;
     }
+
   }
 }

@@ -1,20 +1,14 @@
 package slimeknights.mantle.client.model;
 
-import com.google.common.base.Charsets;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import net.fabricmc.fabric.api.client.model.ModelProviderContext;
-import net.fabricmc.fabric.api.client.model.ModelProviderException;
 import net.fabricmc.fabric.api.client.model.ModelResourceProvider;
-import net.minecraft.client.MinecraftClient;
+import java.io.IOException;
+
 import net.minecraft.client.render.model.UnbakedModel;
 import net.minecraft.client.render.model.json.JsonUnbakedModel;
-import net.minecraft.resource.Resource;
 import net.minecraft.util.Identifier;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 
 public abstract class JsonModelResourceProvider implements ModelResourceProvider {
 

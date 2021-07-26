@@ -1,25 +1,33 @@
 package slimeknights.mantle.network.packet;
 
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import java.io.IOException;
+
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.network.PacketByteBuf;
 
 /**
  * Packet instance that automatically runs the logic on the main thread for thread safety
  */
-public interface IThreadsafePacket extends ISimplePacket {
-  @Override
-  default void handle(PlayerEntity playerEntity, PacketSender sender) {
-    handleThreadsafe(playerEntity, sender);
-//    NetworkEvent.Context context = supplier.get();
-//    context.enqueueWork(() -> handleThreadsafe(context));
-//    context.setPacketHandled(true);
+public abstract class IThreadsafePacket extends ISimplePacket {
+
+
+  public IThreadsafePacket(PacketByteBuf packetByteBuf) {
+    super(packetByteBuf);
   }
+
+  @Override
+  public void handle(PlayerEntity playerEntity) { }
 
   /**
    * Handles receiving the packet on the correct thread
    * Packet is automatically set to handled as well by the base logic
-   * @param sender the packet sender
+   *
+   * @param player
    */
-  void handleThreadsafe(PlayerEntity playerEntity, PacketSender sender);
+  public abstract void handleThreadsafe(PlayerEntity player);
+
+  @Override
+  public void read(PacketByteBuf buf) throws IOException {
+    encode(buf);
+  }
 }

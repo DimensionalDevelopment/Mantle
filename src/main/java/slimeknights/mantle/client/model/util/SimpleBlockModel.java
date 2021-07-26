@@ -413,7 +413,7 @@ public class SimpleBlockModel implements BakedModel, UnbakedModel {
 
     public Loader() {
       super("");
-      throw new RuntimeException("CRAB!");
+      //throw new RuntimeException("CRAB!");
     }
 
     @Override
