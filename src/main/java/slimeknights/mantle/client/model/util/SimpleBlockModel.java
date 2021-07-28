@@ -35,6 +35,7 @@ import slimeknights.mantle.Mantle;
 import slimeknights.mantle.client.model.HBMABFIB;
 import slimeknights.mantle.client.model.JsonModelResourceProvider;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -56,7 +57,7 @@ public class SimpleBlockModel implements BakedModel, UnbakedModel {
   /** Location used for baking dynamic models, name does not matter so just using a constant */
   private static final Identifier BAKE_LOCATION = Mantle.getResource("dynamic_model_baking");
 
-  private final JsonUnbakedModel owner;
+  public final JsonUnbakedModel owner;
 
   /** Parent model location, used to fetch parts and for textures if the owner is not a block model */
   @Nullable
@@ -65,7 +66,7 @@ public class SimpleBlockModel implements BakedModel, UnbakedModel {
   private final List<ModelElement> parts;
   /** Fallback textures in case the owner does not contain a block model */
   private final Map<String,Either<SpriteIdentifier, String>> textures;
-  private JsonUnbakedModel parent;
+  public JsonUnbakedModel parent;
 
   /**
    * Creates a new simple block model

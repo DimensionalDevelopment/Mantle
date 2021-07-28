@@ -21,7 +21,9 @@ import slimeknights.mantle.client.model.HBMABFIB;
 import slimeknights.mantle.client.model.JsonModelResourceProvider;
 import slimeknights.mantle.client.model.util.SimpleBlockModel;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -33,7 +35,7 @@ import java.util.function.Function;
 public class FluidsModel implements UnbakedModel {
   private final SimpleBlockModel model;
   private final List<FluidCuboid> fluids;
-  private final JsonUnbakedModel owner;
+  public final JsonUnbakedModel owner;
 
   public FluidsModel(SimpleBlockModel model, List<FluidCuboid> fluids, JsonUnbakedModel owner) {
     this.model = model;
@@ -101,12 +103,12 @@ public class FluidsModel implements UnbakedModel {
 
     @Override
     public ModelTransformation getTransformation() {
-      return null;
+      return ModelTransformation.NONE;
     }
 
     @Override
     public ModelOverrideList getOverrides() {
-      return null;
+      return ModelOverrideList.EMPTY;
     }
 
     public List<FluidCuboid> getFluids() {
